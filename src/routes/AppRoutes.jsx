@@ -1,0 +1,78 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from '../pages/auth/LoginPage';
+import MainLayout from '../components/layout/MainLayout';
+import Dashboard from '../pages/dashboard/Dashboard';
+import Vehiculos from '../pages/vehiculo/Vehiculos';
+import Conductores from '../pages/conductor/Conductores';
+import Viajes from '../pages/viaje/Viajes';
+import Reportes from '../pages/Reportes';
+import Seguimiento from '../pages/Seguimiento';
+import Facturacion from '../pages/Facturacion';
+import PrivateRoute from './PrivateRoute';
+import ProtectedRoute from './ProtectedRoute';
+import PublicRoute from './PublicRoute';
+import PasswordRecoveryForm from '../features/auth/PasswordRecoveryForm';
+import ResetPasswordForm from '../features/auth/ResetPasswordForm';
+
+
+function AppRoutes({ darkMode, toggleDarkMode }) {
+  return (
+    <Routes>
+      {/* Rutas públicas */}
+      <Route element={<PublicRoute restricted={true} />}>
+        <Route path="/" element={<LoginPage darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+      </Route>
+
+      <Route path="/recuperar-contrasena" element={<PasswordRecoveryForm />} />
+      <Route path="/reset-password" element={<ResetPasswordForm />} />
+
+      {/* Rutas privadas (autenticadas) */}
+      <Route path="/logged-in" element={<PrivateRoute><MainLayout darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>}>
+        <Route path="dashboard" element={<Dashboard darkMode={darkMode} />} />
+        
+        {/* Rutas con protección de roles */}
+        <Route path="vehiculos" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
+            <Vehiculos darkMode={darkMode} />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="conductores" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'CONDUCTOR']}>
+            <Conductores darkMode={darkMode} />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="viajes" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
+            <Viajes darkMode={darkMode} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="reportes" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
+            <Reportes darkMode={darkMode} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="seguimiento" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'CONDUCTOR']}>
+            <Seguimiento darkMode={darkMode} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="facturacion" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
+            <Facturacion darkMode={darkMode} />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="" element={<Navigate to="/logged-in/dashboard" replace />} />
+      </Route>
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export default AppRoutes;
