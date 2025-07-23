@@ -6,8 +6,10 @@ import { conductoresService } from '../../services/ConductoresService';
 import { viajesService } from '../../services/ViajesService';
 import { FaTruck, FaUser, FaRoute, FaFilter, FaPlus } from 'react-icons/fa';
 import { GraficoBarras } from '../../components/charts/GraficoBarras';
+import { useTheme } from '../../context/ThemeContext';
 
-export default function Dashboard({ darkMode, userRole }) {
+export default function Dashboard({ userRole }) {
+  const { darkMode } = useTheme();
 
   const [vehiculos, setVehiculos] = useState([]);
   const [conductores, setConductores] = useState([]);
@@ -51,11 +53,11 @@ export default function Dashboard({ darkMode, userRole }) {
   ]);
 
   const data = {
-    labels: ["Ene", "Feb", "Mar", "Abr"],
+    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
     datasets: [
       {
         label: "Gastos",
-        data: [30, 40, 20, 5],
+        data: [30, 40, 20, 5, 10, 15, 10, 0, 0, 0, 0, 0],
         backgroundColor: "rgb(251, 192, 45)",
         borderWidth: 1,
       },

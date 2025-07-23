@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
-function Modal({ isOpen, onClose, title, children, darkMode }) {
+function Modal({ isOpen, onClose, title, children }) {
+  const { darkMode } = useTheme();
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -18,7 +21,7 @@ function Modal({ isOpen, onClose, title, children, darkMode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
       {/* Fondo oscuro */}
-      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
+      <div className={`fixed inset-0 ${darkMode ? 'bg-gray-900 bg-opacity-50' : 'bg-gray-100 bg-opacity-50'}`} onClick={onClose}></div>
 
       {/* Contenido del modal */}
       <div

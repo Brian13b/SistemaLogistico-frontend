@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import PersonalInfoModal from '../../features/auth/PersonalInfoModal';
 import UserConfigModal from '../../features/auth/UserConfigModal';
 import { userService } from '../../services/UserService';
+import { useTheme } from '../../context/ThemeContext';
 
-export default function PerfilMenu({ darkMode, onLogout, isSidebarCollapsed, user}) {
+export default function PerfilMenu({ onLogout, isSidebarCollapsed, user}) {
+  const { darkMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [isPersonalInfoModalOpen, setIsPersonalInfoModalOpen] = useState(false);
   const [isUserConfigModalOpen, setIsUserConfigModalOpen] = useState(false);
@@ -72,14 +74,14 @@ export default function PerfilMenu({ darkMode, onLogout, isSidebarCollapsed, use
       <div className="relative">
         <button 
           onClick={toggleMenu} 
-          className={`flex items-center space-x-3 ${darkMode ? 'text-white hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded p-2 w-full`}
+          className={`flex items-center space-x-3 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded p-2 w-full`}
         >
           <FaUser className={darkMode ? 'text-yellow-400' : 'text-blue-600'} />
           {!isSidebarCollapsed && <span>Perfil</span>}
         </button>
         
         {isOpen && (
-          <div className={`absolute bottom-full left-0 w-48 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-md shadow-lg`}>
+          <div className={`absolute bottom-full left-0 w-48 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-200 text-gray-900'} border rounded-md shadow-lg`}>
             <ul>
               <li>
                 <button 

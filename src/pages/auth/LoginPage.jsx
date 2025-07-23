@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../../components/common/ThemeToggle';
 import LoginForm from '../../features/auth/LoginForm';
-import { useTheme } from '../../hooks/useTheme';
+import { useTheme } from '../../context/ThemeContext';
 
 function LoginPage() {
   const { darkMode, toggleDarkMode } = useTheme();
@@ -35,7 +35,7 @@ function LoginPage() {
       {/* Login form */}
       <div className={`w-full lg:w-1/3 flex flex-col justify-center p-8 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="absolute top-4 right-4">
-          <ThemeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          <ThemeToggle />
         </div>
 
         <div className="mb-10 lg:hidden">

@@ -8,12 +8,15 @@ import { FaPlus, FaEdit, FaEye, FaFile, FaSearch, FaTimes, FaFilter } from 'reac
 import { useTableControls } from '../../hooks/useTableControls';
 import { Pagination } from '../../components/common/Paginacion';
 import { AdvancedFilters } from '../../components/common/FiltrosAvanzados';
+import { useTheme } from '../../context/ThemeContext';
 
-function Vehiculos({ darkMode }) {
+function Vehiculos() {
+  const { darkMode } = useTheme();
   // Estados para datos
   const [vehiculos, setVehiculos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   
   // Estados para modales
   const [viewModalOpen, setViewModalOpen] = useState(false);

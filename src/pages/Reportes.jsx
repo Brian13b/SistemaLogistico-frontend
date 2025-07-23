@@ -6,8 +6,10 @@ import { ReportSummary } from '../features/reportes/ReportSummary';
 import { ReportPreview } from '../features/reportes/ReportPreview';
 import { FaPrint, FaDownload, FaBook } from 'react-icons/fa';
 import { tiposReportes, datosEjemplo } from '../utils/reportData';
+import { useTheme } from '../context/ThemeContext';
 
-const Reportes = ({ darkMode }) => {
+const Reportes = () => {
+  const { darkMode } = useTheme();
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [reportesSeleccionados, setReportesSeleccionados] = useState({

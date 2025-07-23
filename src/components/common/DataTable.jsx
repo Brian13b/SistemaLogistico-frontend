@@ -1,4 +1,8 @@
-function DataTable({ darkMode, columns, data, onRowClick }) {
+import { useTheme } from '../../context/ThemeContext';
+
+function DataTable({ columns, data, onRowClick }) {
+  const { darkMode } = useTheme();
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full">

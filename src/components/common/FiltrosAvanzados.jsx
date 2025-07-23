@@ -1,15 +1,9 @@
 import { FaTimes } from 'react-icons/fa';
+import { useTheme } from '../../context/ThemeContext';
 
-export const AdvancedFilters = ({ 
-  filters, 
-  onFilterChange, 
-  onReset, 
-  onApply, 
-  show, 
-  onClose,
-  darkMode = false,
-  filterConfig = []
-}) => {
+export const AdvancedFilters = ({ filters, onFilterChange, onReset, onApply, show, onClose, filterConfig = [] }) => {
+  const { darkMode } = useTheme();
+
   if (!show) return null;
 
   return (

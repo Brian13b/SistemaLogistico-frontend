@@ -4,16 +4,29 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../common/ThemeToggle';
 import Sidebar from './Sidebar';
-import { useTheme } from '../../hooks/useTheme';
+import { useTheme } from '../../context/ThemeContext';
 
 function MainLayout() {
+  // Cambiamos el nombre del estado para reflejar mejor su función
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { darkMode, toggleDarkMode } = useTheme();
+  const { darkMode } = useTheme();
 
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
+  // Detectar si es mobile
+  const isMobile = window.innerWidth < 768;
+
+  const handleSidebarToggle = () => {
+    if (isMobile) {
+      setIsSidebarOpenMobile(!isSidebarOpenMobile);
+    } else {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
+  };
+
+  const handleSidebarCloseMobile = () => {
+    setIsSidebarOpenMobile(false);
   };
 
   const handleLogout = () => {
@@ -30,44 +43,49 @@ function MainLayout() {
         } border-b flex items-center justify-between p-4`}
       >
         <button
-          onClick={toggleSidebar}
+          onClick={handleSidebarToggle}
           className={`p-2 rounded-full ${
             darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
           } transition-colors mr-4`}
         >
           <FaBars className={`${darkMode ? 'text-yellow-400' : 'text-gray-600'}`} />
         </button>
-
         {/* Logo y título */}
         <div className="flex items-center">
           <div className="pr-5">
             <div className={`text-xl font-bold flex items-center ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-              <span
-                className={`${
-                  darkMode ? 'bg-yellow-500 text-gray-900' : 'bg-blue-600 text-white'
-                } rounded-full p-2 mr-2`}
-              >
+              <span className={`${darkMode ? 'bg-yellow-500 text-gray-900' : 'bg-blue-600 text-white'} rounded-full p-2 mr-2`}>
                 B
               </span>
               LOGISTICA
             </div>
           </div>
         </div>
-
         {/* Botón de tema */}
         <div className="flex items-center">
-          <ThemeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          <ThemeToggle />
         </div>
       </header>
-
       {/* Contenedor principal (sidebar + contenido) */}
       <div className={`flex flex-1 overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
         {/* Sidebar */}
-        <Sidebar darkMode={darkMode} isSidebarCollapsed={isSidebarCollapsed} handleLogout={handleLogout} user={user} />
-
+        <Sidebar
+          isSidebarCollapsed={isSidebarCollapsed}
+          isSidebarOpenMobile={isSidebarOpenMobile}
+          onSidebarCloseMobile={handleSidebarCloseMobile}
+          handleSidebarToggle={handleSidebarToggle}
+          user={user}
+        />
+        {/* Overlay en mobile */}
+        {isSidebarOpenMobile && isMobile && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 z-30"
+            onClick={handleSidebarCloseMobile}
+          ></div>
+        )}
         {/* Main Content */}
         <main
-          className={`flex-1 overflow-auto ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'} p-6 ${isSidebarCollapsed ? 'ml-6' : 'ml-8'}`}
+          className={`flex-1 overflow-auto ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'} p-6 ${isSidebarCollapsed && !isMobile ? 'ml-6' : 'ml-8'}`}
         >
           <Outlet />
         </main>

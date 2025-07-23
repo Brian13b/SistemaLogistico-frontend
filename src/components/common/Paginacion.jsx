@@ -1,13 +1,9 @@
 import { FaAngleLeft, FaAngleRight, FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
+import { useTheme } from '../../context/ThemeContext';
 
-export const Pagination = ({ 
-  paginaActual, 
-  totalPaginas, 
-  onPageChange,
-  darkMode = false,
-  currentItems,
-  totalItems
-}) => {
+export const Pagination = ({ paginaActual, totalPaginas, onPageChange, currentItems, totalItems }) => {
+  const { darkMode } = useTheme();
+
   const getPageNumbers = () => {
     if (totalPaginas <= 5) {
       return Array.from({ length: totalPaginas }, (_, i) => i + 1);

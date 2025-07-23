@@ -1,4 +1,8 @@
-export default function DashboardCard({ title, value, darkMode, icon }) {
+import { useTheme } from '../context/ThemeContext';
+
+export default function DashboardCard({ title, value, icon }) {
+    const { darkMode } = useTheme();
+
     return (
       <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} flex justify-between items-center`}>
         <div>

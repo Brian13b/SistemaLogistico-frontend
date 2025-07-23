@@ -10,8 +10,10 @@ import ViajesDocumentosModal from '../../features/viajes/DocumentoViajesModal';
 import { useTableControls } from '../../hooks/useTableControls';
 import { Pagination } from '../../components/common/Paginacion';
 import { AdvancedFilters } from '../../components/common/FiltrosAvanzados';
+import { useTheme } from '../../context/ThemeContext';
 
-function Viajes({ darkMode }) {
+function Viajes() {
+  const { darkMode } = useTheme();
   // Estados para datos
   const [viajes, setViajes] = useState([]);
   const [conductores, setConductores] = useState([]);

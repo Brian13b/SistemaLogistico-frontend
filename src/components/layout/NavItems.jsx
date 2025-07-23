@@ -1,6 +1,9 @@
 import { NavLink } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 
-export default function NavItem({ icon, text, path, darkMode, isCollapsed }) {
+export default function NavItem({ icon, text, path, isCollapsed }) {
+  const { darkMode } = useTheme();
+
   return (
     <NavLink
       to={path}

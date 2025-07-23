@@ -8,8 +8,10 @@ import { FaPlus, FaEdit, FaEye, FaFile, FaSearch, FaTimes, FaFilter } from 'reac
 import { useTableControls } from '../../hooks/useTableControls';
 import { Pagination } from '../../components/common/Paginacion';
 import { AdvancedFilters } from '../../components/common/FiltrosAvanzados';
+import { useTheme } from '../../context/ThemeContext';
 
-function Conductores({ darkMode }) {
+function Conductores() {
+  const { darkMode } = useTheme();
   // Estados para datos
   const [conductores, setConductores] = useState([]);
   const [loading, setLoading] = useState(true);

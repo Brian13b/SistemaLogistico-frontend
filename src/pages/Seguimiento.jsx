@@ -3,8 +3,10 @@ import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { trackerService } from '../services/trackerService';
+import { useTheme } from '../context/ThemeContext';
 
-function Seguimiento({ darkMode }) {
+function Seguimiento() {
+  const { darkMode } = useTheme();
   const [vehiculos, setVehiculos] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);

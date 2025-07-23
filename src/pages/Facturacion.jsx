@@ -1,4 +1,7 @@
-export default function Facturacion({ darkMode }) {
+import { useTheme } from '../context/ThemeContext';
+
+export default function Facturacion() {
+  const { darkMode } = useTheme();
     return (
       <div>
         <h1 className="text-2xl font-bold mb-6">Facturación</h1>
