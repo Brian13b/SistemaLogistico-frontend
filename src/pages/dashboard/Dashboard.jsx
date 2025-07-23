@@ -3,6 +3,9 @@ import DashboardCard from '../../components/DashboardCard';
 import DataTable from '../../components/common/DataTable';
 import { vehiculosService } from '../../services/VehiculosService';
 import { conductoresService } from '../../services/ConductoresService';
+import { vehiculoDocumentosService } from '../../services/VehiculoDocumentosServices';
+import { conductorDocumentosService } from '../../services/ConductorDocumentosServices';
+import { viajesDocumentosService } from '../../services/ViajesDocumentosService';
 import { viajesService } from '../../services/ViajesService';
 import { FaTruck, FaUser, FaRoute, FaFilter, FaPlus } from 'react-icons/fa';
 import { GraficoBarras } from '../../components/charts/GraficoBarras';
@@ -14,43 +17,7 @@ export default function Dashboard({ userRole }) {
   const [vehiculos, setVehiculos] = useState([]);
   const [conductores, setConductores] = useState([]);
   const [viajes, setViajes] = useState([]);
-  const [vencimientos, setVencimientos] = useState([
-    {
-      tipo: "Vencimiento de Seguro",
-      fecha: "15/05/2023",
-      descripcion: "Seguro anual del vehículo",
-      vehiculo: "AB123CD",
-      critico: true
-    },
-    {
-      tipo: "Vencimiento de Licencia",
-      fecha: "20/05/2023",
-      descripcion: "Licencia de conducir",
-      conductor: "Juan Pérez",
-      critico: false
-    },
-    {
-      tipo: "Vencimiento de Revisión Técnica",
-      fecha: "30/05/2023",
-      descripcion: "Revisión técnica del vehículo",
-      vehiculo: "EF456GH",
-      critico: false
-    },
-    {
-      tipo: "Vencimiento de Seguro",
-      fecha: "10/06/2023",
-      descripcion: "Seguro anual del vehículo",
-      vehiculo: "IJ789KL",
-      critico: true
-    },
-    {
-      tipo: "Vencimiento de Licencia",
-      fecha: "15/06/2023",
-      descripcion: "Licencia de conducir",
-      conductor: "María López",
-      critico: false
-    }
-  ]);
+  const [vencimientos, setVencimientos] = useState([]);
 
   const data = {
     labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
@@ -92,9 +59,51 @@ export default function Dashboard({ userRole }) {
       }
     };
 
+    const fetchVencimientos = async () => {
+      try {
+  
+        // Llama a los tres endpoints en paralelo
+        const [vehiculosRes, conductoresRes, viajesRes] = await Promise.all([
+          vehiculoDocumentosService.getProximosVencimientos(30),
+          conductorDocumentosService.getProximosVencimientos(30),
+          viajesDocumentosService.getProximosVencimientos(30)
+        ]);
+
+        // Procesa y unifica los resultados
+        const procesar = (docs, tipoEntidad) => docs.map(doc => {
+          const fechaVenc = new Date(doc.fecha_vencimiento);
+          const hoy = new Date();
+          const diffDias = Math.ceil((fechaVenc - hoy) / (1000 * 60 * 60 * 24));
+          if (diffDias < 0 || diffDias > 30) return null;
+          return {
+            tipo: doc.tipo_documento,
+            fecha: fechaVenc.toLocaleDateString('es-AR'),
+            descripcion: doc.archivo_nombre,
+            entidad: tipoEntidad,
+            vehiculo: doc.id_vehiculo,
+            conductor: doc.id_conductor,
+            viaje: doc.viaje_id,
+            critico: diffDias < 10,
+            warning: diffDias >= 10 && diffDias <= 30
+          };
+        }).filter(Boolean);
+
+        const vencimientosUnificados = [
+          ...procesar(vehiculosRes.data, 'vehiculo'),
+          ...procesar(conductoresRes.data, 'conductor'),
+          ...procesar(viajesRes.data, 'viaje')
+        ];
+
+        setVencimientos(vencimientosUnificados);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     fetchVehiculos();
     fetchConductores();
     fetchViajes();
+    fetchVencimientos();
   }, []);
 
   const formatDate = (dateString) => {
@@ -149,7 +158,9 @@ export default function Dashboard({ userRole }) {
                     <div className={`flex-shrink-0 mt-1 w-2 h-2 rounded-full ${
                       item.critico 
                         ? 'bg-red-500' 
-                        : 'bg-yellow-500'
+                        : item.warning
+                          ? 'bg-yellow-500'
+                          : 'bg-green-500'
                     }`}></div>
                     <div className="ml-3 flex-1">
                       <div className="flex justify-between">
@@ -163,14 +174,21 @@ export default function Dashboard({ userRole }) {
                       <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
                         {item.descripcion}
                       </p>
-                      {item.vehiculo ?
+                      {item.entidad === 'vehiculo' && (
                         <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
-                          Vehículo: {item.vehiculo}
-                        </p> : 
-                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
-                          Conductor: {item.conductor}
+                          Vehículo ID: {item.vehiculo}
                         </p>
-                      }
+                      )}
+                      {item.entidad === 'conductor' && (
+                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
+                          Conductor ID: {item.conductor}
+                        </p>
+                      )}
+                      {item.entidad === 'viaje' && (
+                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
+                          Viaje ID: {item.viaje}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))

@@ -25,6 +25,7 @@ export const viajesDocumentosService = {
         });
     },
     deleteDocumento: (documentoId) => api.delete(`/documentos_viajes/${documentoId}`),
+    getProximosVencimientos: (dias) => api.get(`/documentos_viajes/proximos_vencimientos/${dias}`),
     download: (documentoId) => api.get(`/documentos_viajes/${documentoId}/descargar`, {
         responseType: 'blob' 
     }),    

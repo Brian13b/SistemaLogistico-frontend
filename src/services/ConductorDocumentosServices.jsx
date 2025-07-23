@@ -25,6 +25,7 @@ export const conductorDocumentosService = {
     getById: (documentoId) => api.get(`/documentos_conductores/${documentoId}`),
     getAllByConductor: (conductorId) => api.get(`/documentos_conductores/conductor/${conductorId}`),
     getAllByVencimiento: () => api.get(`/documentos_conductores/vencidos`),
+    getProximosVencimientos: (dias) => api.get(`/documentos_conductores/proximos_vencimientos/${dias}`),
     delete: (documentoId) => api.delete(`/documentos_conductores/${documentoId}`),
     download: (documentoId) => api.get(`/documentos_conductores/${documentoId}/descargar`, {
         responseType: 'blob' 
