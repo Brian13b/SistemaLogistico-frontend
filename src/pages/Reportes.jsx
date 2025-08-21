@@ -45,9 +45,8 @@ const Reportes = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 flex items-center">
-        <FaBook className="mr-2" />
+    <div>
+      <h1 className="text-2xl font-bold mb-6">
         Generador de Reportes
       </h1>
       

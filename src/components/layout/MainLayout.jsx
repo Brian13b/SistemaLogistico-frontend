@@ -79,13 +79,13 @@ function MainLayout() {
         {/* Overlay en mobile */}
         {isSidebarOpenMobile && isMobile && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-40 z-30"
+            className="fixed inset-0 bg-transparent bg-opacity-40 z-30"
             onClick={handleSidebarCloseMobile}
           ></div>
         )}
         {/* Main Content */}
         <main
-          className={`flex-1 overflow-auto ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'} p-6 ${isSidebarCollapsed && !isMobile ? 'ml-6' : 'ml-8'}`}
+          className={`flex-1 overflow-auto ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'} p-6 ${isSidebarCollapsed && !isMobile ? 'ml-3' : 'ml-3'}`}
         >
           <Outlet />
         </main>

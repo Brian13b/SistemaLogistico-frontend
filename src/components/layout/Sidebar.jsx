@@ -13,13 +13,13 @@ function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile
   let sidebarClass = `transition-all duration-300 flex flex-col border-r z-40 fixed md:static top-0 left-0 h-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`;
 
   if (isMobile) {
-    sidebarClass += ` w-64 ${isSidebarOpenMobile ? 'translate-x-0' : '-translate-x-full'} shadow-lg`;
+    sidebarClass += ` w-48 ${isSidebarOpenMobile ? 'translate-x-0' : '-translate-x-full'} shadow-lg`;
   } else {
-    sidebarClass += ` ${isSidebarCollapsed ? 'w-16' : 'w-64'}`;
+    sidebarClass += ` ${isSidebarCollapsed ? 'w-16' : 'w-48'}`;
   }
 
   return (
-    <div className={sidebarClass} style={{ minWidth: isMobile ? undefined : isSidebarCollapsed ? '4rem' : '16rem' }}>
+    <div className={sidebarClass} style={{ minWidth: isMobile ? undefined : isSidebarCollapsed ? '4rem' : '8rem' }}>
       {/* Botón para colapsar/expandir en desktop */}
       {/* Eliminado el botón de flecha, solo se controla desde el header */}
       <div className="flex flex-col h-full">
