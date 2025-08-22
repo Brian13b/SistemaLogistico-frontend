@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../../services/AuthService';
+import { authService } from '../../services/authService';
 
 function PasswordRecoveryForm({ darkMode }) {
   const [email, setEmail] = useState('');
