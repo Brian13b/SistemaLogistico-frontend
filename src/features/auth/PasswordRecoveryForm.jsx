@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../../services/AuthService';
+import { authService } from '../../services/authService';
 
 function PasswordRecoveryForm({ darkMode }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handlePasswordRecovery = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+    setError('');
 
     try {
       await authService.requestPasswordReset(email);
@@ -33,35 +35,34 @@ function PasswordRecoveryForm({ darkMode }) {
   };
 
   return (
-    <div className={`max-w-md mx-auto p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow-md`}>
-      <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-        Recuperar Contraseña
-      </h2>
-      
-      <form onSubmit={handlePasswordRecovery}>
-        <div className="mb-4">
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            Correo Electrónico
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-gray-100">
+      <form
+        onSubmit={handlePasswordRecovery}
+        className="bg-white p-8 rounded-xl shadow-lg min-w-[320px] max-w-sm w-full flex flex-col gap-5"
+      >
+        <h2 className="text-center mb-2 text-blue-700 text-2xl font-bold">Recuperar contraseña</h2>
+
+        <div className="mb-2">
+          <label htmlFor="email" className="block mb-2 font-semibold text-gray-700">
+            Correo electrónico
           </label>
-          <input 
-            type="email" 
+          <input
+            type="email"
+            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            className={`w-full p-3 rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-gray-100 border-gray-300 text-gray-700'}`}
-            placeholder="Ingresa tu correo electrónico"
+            className="w-full p-3 rounded-lg border border-gray-300 text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            placeholder="Ingresa tu correo"
+            autoComplete="email"
           />
         </div>
-
-        {message && (
-          <div className={`mb-4 p-3 rounded ${message.includes('error') ? (darkMode ? 'text-red-400 bg-red-900/20' : 'text-red-600 bg-red-100') : (darkMode ? 'text-green-400 bg-green-900/20' : 'text-green-600 bg-green-100')}`}>
-            {message}
-          </div>
-        )}
+                
+        {error && (<div className="text-red-600 text-center font-semibold"> {error} </div>)}
+        {message && (<div className="text-green-700 text-center font-semibold"> {message} </div>)}
 
         <button 
           type="submit" 
-          className={`w-full py-3 rounded font-medium ${darkMode ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-600' : 'bg-blue-600 text-white hover:bg-blue-700'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className="w-full p-3 rounded-lg bg-blue-700 text-white font-bold text-base shadow hover:bg-blue-800 transition-colors"
           disabled={loading}
         >
           {loading ? 'Enviando...' : 'Recuperar Contraseña'}

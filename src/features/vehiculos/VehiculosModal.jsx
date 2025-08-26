@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Modal from '../../components/Modal';
 import { vehiculosService } from '../../services/VehiculosService';
 import { vehiculoDocumentosService } from '../../services/VehiculoDocumentosServices';
-import { FaDownload, FaFileAlt } from 'react-icons/fa';
+import { FaDownload } from 'react-icons/fa';
 import { generateFichaPDF } from '../../utils/pdfGenerator';
 
 function VehiculoModal({ isOpen, onClose, vehiculoId, darkMode }) {

@@ -35,7 +35,7 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
         <Route path="conductores" element={
-          <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'CONDUCTOR']}>
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
             <Conductores />
           </ProtectedRoute>
         } />

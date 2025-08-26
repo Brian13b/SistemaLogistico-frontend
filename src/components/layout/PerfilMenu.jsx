@@ -120,6 +120,7 @@ export default function PerfilMenu({ onLogout, isSidebarCollapsed, user}) {
         onClose={() => setIsPersonalInfoModalOpen(false)}
         user={user}
         onUpdateUser={handleUpdateUser}
+        darkMode={darkMode}
       />
   
         {user.role === 'ADMINISTRADOR' && (
@@ -129,6 +130,7 @@ export default function PerfilMenu({ onLogout, isSidebarCollapsed, user}) {
             onAddUser={handleAddUser}
             onEditUser={handleEditUser}
             onDeleteUser={handleDeleteUser}
+            darkMode={darkMode}
           />
         )}
           

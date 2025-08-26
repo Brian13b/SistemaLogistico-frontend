@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaUser, FaEnvelope, FaKey, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 import { userService } from '../../services/UserService';
 
-const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
+const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser, darkMode }) => {
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -13,6 +13,7 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingUser, setIsLoadingUser] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -53,9 +54,7 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
     const validateForm = () => {
         const newErrors = {};
         
-        if (!formData.username.trim()) {
-            newErrors.username = 'El nombre de usuario es requerido';
-        }
+        if (!formData.username.trim()) newErrors.username = 'El nombre de usuario es requerido';
         
         if (!formData.email.trim()) {
             newErrors.email = 'El correo electrónico es requerido';
@@ -64,17 +63,9 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
         }
         
         if (formData.newPassword) {
-            if (!formData.currentPassword) {
-                newErrors.currentPassword = 'Debe ingresar la contraseña actual para cambiarla';
-            }
-            
-            if (formData.newPassword !== formData.confirmPassword) {
-                newErrors.confirmPassword = 'Las contraseñas no coinciden';
-            }
-            
-            if (formData.newPassword.length < 8) {
-                newErrors.newPassword = 'La contraseña debe tener al menos 8 caracteres';
-            }
+            if (!formData.currentPassword) newErrors.currentPassword = 'Debe ingresar la contraseña actual para cambiarla';
+            if (formData.newPassword !== formData.confirmPassword) newErrors.confirmPassword = 'Las contraseñas no coinciden';
+            if (formData.newPassword.length < 8) newErrors.newPassword = 'La contraseña debe tener al menos 8 caracteres';
         }
         
         setErrors(newErrors);
@@ -83,13 +74,9 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
 
         setIsSubmitting(true);
-        
         try {
             const updateData = {
                 username: formData.username,
@@ -117,7 +104,11 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-96">
+            <div
+                className={`rounded-lg shadow-lg w-full max-w-md p-6 transition-colors animate-fadeIn ${
+                    darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
+                }`}
+            >
                 <h2 className="text-xl font-bold mb-4 flex items-center"> Información Personal</h2>
                 <p className="text-sm text-gray-500 mb-4">Actualiza tu información personal y contraseña</p>
                 
@@ -141,27 +132,27 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <div className="flex items-center mb-2">
-                                <FaUser className="mr-2" />Usuario 
-                                <span className={`text-sm px-2 rounded ${user?.role === 'ADMINISTRADOR' 
-                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                    : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                } ml-2`}>
+                                <FaUser className="mr-2" /> Usuario 
+                                <span className={`text-sm px-2 rounded ml-2 ${
+                                    user?.role === 'ADMINISTRADOR'
+                                        ? (darkMode
+                                            ? 'bg-blue-900 text-blue-200'
+                                            : 'bg-blue-100 text-blue-800')
+                                        : (darkMode
+                                            ? 'bg-green-900 text-green-200'
+                                            : 'bg-green-100 text-green-800')
+                                }`}>
                                     {user?.role}
                                 </span>
                             </div>
-                            
-  
-
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 name="username"
                                 value={formData.username}
                                 onChange={handleChange}
-                                className={`w-full p-2 border rounded dark:bg-gray-700 ${
-                                    errors.username ? 'border-red-500' : ''
+                                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
                                 }`}
-                                required 
-                                disabled={isSubmitting}
                             />
                         </div>
                         
@@ -169,16 +160,14 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
                             <label className="block mb-2 flex items-center">
                                 <FaEnvelope className="mr-2" /> Correo Electrónico
                             </label>
-                            <input 
-                                type="email" 
+                            <input
+                                type="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className={`w-full p-2 border rounded dark:bg-gray-700 ${
-                                    errors.email ? 'border-red-500' : ''
+                                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
                                 }`}
-                                required 
-                                disabled={isSubmitting}
                             />
                         </div>
                         
@@ -186,17 +175,24 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
                             <label className="block mb-2 flex items-center">
                                 <FaKey className="mr-2" /> Contraseña Actual
                             </label>
-                            <input 
-                                type="password" 
+                            <input
+                                type={showPassword ? "text" : "password"}
                                 name="currentPassword"
                                 value={formData.currentPassword}
                                 onChange={handleChange}
-                                className={`w-full p-2 border rounded dark:bg-gray-700 ${
-                                    errors.currentPassword ? 'border-red-500' : ''
+                                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
                                 }`}
-                                placeholder="Requerida si cambia la contraseña"
-                                disabled={isSubmitting}
                             />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowPassword(!showPassword)} 
+                                className={`mt-1 text-xs hover:underline ${
+                                    darkMode ? "text-blue-400" : "text-blue-600"
+                                }`}
+                            >
+                                {showPassword ? "Ocultar" : "Mostrar"} contraseña
+                            </button>
                         </div>
                         
                         <div className="mb-4">
@@ -208,9 +204,9 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
                                 name="newPassword"
                                 value={formData.newPassword}
                                 onChange={handleChange}
-                                className={`w-full p-2 border rounded dark:bg-gray-700 ${
-                                    errors.newPassword ? 'border-red-500' : ''
-                                }`}
+                                className={`w-full p-2 border rounded placeholder-gray-400 ${
+                                    darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
+                                } ${errors.newPassword ? 'border-red-500' : ''}`}
                                 placeholder="Mínimo 8 caracteres"
                                 disabled={isSubmitting}
                             />
@@ -225,9 +221,9 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                className={`w-full p-2 border rounded dark:bg-gray-700 ${
-                                    errors.confirmPassword ? 'border-red-500' : ''
-                                }`}
+                                className={`w-full p-2 border rounded placeholder-gray-400 ${
+                                    darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
+                                } ${errors.confirmPassword ? 'border-red-500' : ''}`}
                                 placeholder="Repita la nueva contraseña"
                                 disabled={isSubmitting}
                             />
@@ -237,23 +233,21 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser }) => {
                             <button 
                                 type="button" 
                                 onClick={onClose}
-                                className="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition"
+                                className={`px-4 py-2 rounded transition ${
+                                    darkMode
+                                        ? "bg-gray-600 hover:bg-gray-500"
+                                        : "bg-gray-200 hover:bg-gray-300"
+                                }`}
                                 disabled={isSubmitting}
                             >
                                 Cancelar
                             </button>
-                            <button 
-                                type="submit" 
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition flex items-center justify-center"
-                                disabled={isSubmitting}
+                            <button
+                                type="submit"
+                                className="w-full bg-blue-600 text-white py-2 rounded mt-4 hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                             >
-                                {isSubmitting ? (
-                                    <>
-                                        <FaSpinner className="animate-spin mr-2" /> Guardando...
-                                    </>
-                                ) : (
-                                    'Guardar Cambios'
-                                )}
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                Guardar Cambios
                             </button>
                         </div>
                     </form>

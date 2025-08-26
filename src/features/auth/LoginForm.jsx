@@ -54,17 +54,6 @@ function LoginForm({ darkMode }) {
           <button 
             type="button"
             className={`flex-1 py-3 px-4 text-center ${
-              userType === 'CONDUCTOR' 
-                ? `border-b-2 ${darkMode ? 'border-yellow-500 text-yellow-500' : 'border-blue-600 text-blue-600'}` 
-                : `${darkMode ? 'text-gray-400' : 'text-gray-600'}`
-            }`}
-            onClick={() => setUserType('CONDUCTOR')}
-          >
-            Conductor
-          </button>
-          <button 
-            type="button"
-            className={`flex-1 py-3 px-4 text-center ${
               userType === 'ADMINISTRADOR' 
                 ? `border-b-2 ${darkMode ? 'border-yellow-500 text-yellow-500' : 'border-blue-600 text-blue-600'}` 
                 : `${darkMode ? 'text-gray-400' : 'text-gray-600'}`
@@ -72,6 +61,17 @@ function LoginForm({ darkMode }) {
             onClick={() => setUserType('ADMINISTRADOR')}
           >
             Administrador
+          </button>
+          <button 
+            type="button"
+            className={`flex-1 py-3 px-4 text-center ${
+              userType === 'CONDUCTOR' 
+                ? `border-b-2 ${darkMode ? 'border-yellow-500 text-yellow-500' : 'border-blue-600 text-blue-600'}` 
+                : `${darkMode ? 'text-gray-400' : 'text-gray-600'}`
+            }`}
+            onClick={() => setUserType('CONDUCTOR')}
+          >
+            Conductor
           </button>
         </div>
       </div>

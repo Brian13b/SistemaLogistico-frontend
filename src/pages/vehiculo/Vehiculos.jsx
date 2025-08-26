@@ -12,19 +12,15 @@ import { useTheme } from '../../context/ThemeContext';
 
 function Vehiculos() {
   const { darkMode } = useTheme();
-  // Estados para datos
   const [vehiculos, setVehiculos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
-  // Estados para modales
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [documentosModalOpen, setDocumentosModalOpen] = useState(false);
   const [selectedVehiculoId, setSelectedVehiculoId] = useState(null);
 
-  // Filtros y paginación con hook personalizado
   const {
     searchTerm,
     setSearchTerm,
@@ -45,7 +41,6 @@ function Vehiculos() {
     estado: ''
   }, 5);
 
-  // Configuración de filtros avanzados
   const filterConfig = [
     { name: 'marca', label: 'Marca' },
     { name: 'modelo', label: 'Modelo' },
@@ -54,7 +49,6 @@ function Vehiculos() {
     { name: 'estado', label: 'Estado' }
   ];
 
-  // Obtener datos de vehículos
   const fetchVehiculos = async () => {
     try {
       setLoading(true);
@@ -73,7 +67,6 @@ function Vehiculos() {
     fetchVehiculos();
   }, []);
 
-  // Formatear datos para la tabla
   const vehiculosData = useMemo(() => {
     return vehiculos.map(vehiculo => ({
       id: vehiculo.id,
@@ -123,11 +116,9 @@ function Vehiculos() {
     })).sort((a, b) => a.id - b.id);
   }, [vehiculos, darkMode]);
 
-  // Aplicar filtros y paginación
   const filteredVehiculos = filteredData(vehiculosData);
   const { paginatedData: currentVehiculos, totalPaginas, totalItems } = paginateData(filteredVehiculos);
 
-  // Handlers
   const handleNewVehiculoClick = () => {
     setSelectedVehiculoId(null);
     setEditModalOpen(true);

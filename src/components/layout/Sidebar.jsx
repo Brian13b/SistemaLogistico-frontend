@@ -1,15 +1,13 @@
-import { FaDashcube, FaTruck, FaUser, FaRoute, FaClipboardList, FaMapMarkedAlt, FaFileInvoiceDollar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaDashcube, FaTruck, FaUser, FaRoute, FaClipboardList, FaMapMarkedAlt, FaFileInvoiceDollar } from 'react-icons/fa';
 import NavItem from './NavItems';
 import PerfilMenu from './PerfilMenu';
 import { useTheme } from '../../context/ThemeContext';
 
-function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile, handleSidebarToggle, user }) {
+function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile, user, onLogout }) {
   const { darkMode } = useTheme();
 
-  // Detectar si es mobile
   const isMobile = window.innerWidth < 768;
 
-  // Clases base para sidebar
   let sidebarClass = `transition-all duration-300 flex flex-col border-r z-40 fixed md:static top-0 left-0 h-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`;
 
   if (isMobile) {
@@ -36,7 +34,7 @@ function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile
         </div>
         <div className={`p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <PerfilMenu 
-            onLogout={onSidebarCloseMobile}
+            onLogout={onLogout}
             isSidebarCollapsed={isSidebarCollapsed && !isMobile}
             user={user}
           />

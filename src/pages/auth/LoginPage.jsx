@@ -11,7 +11,7 @@ function LoginPage() {
       {/* Background image */}
       <div className="hidden lg:block lg:w-2/3 relative">
         <img 
-          src="https://picsum.photos/1200/800" 
+          src="https://picsum.photos/id/2/1200/800"
           alt="Logistica" 
           className="absolute inset-0 w-full h-full object-cover"
         />
