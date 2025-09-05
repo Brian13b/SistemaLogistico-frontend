@@ -4,8 +4,10 @@ import { viajesService } from '../../services/ViajesService';
 import { conductoresService } from '../../services/ConductoresService';
 import { vehiculosService } from '../../services/VehiculosService';
 import { FaSave, FaTimes } from 'react-icons/fa';
+import { useNotification } from '../../context/NotificationContext';
 
 function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
+  const { showSuccess, showError, showWarning } = useNotification();
   const [viaje, setViaje] = useState({
     codigo: '',
     origen: '',
@@ -40,6 +42,7 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
           setVehiculos(vehiculosRes.data);
         } catch (err) {
           console.error("Error cargando opciones:", err);
+          showError("Error al cargar las opciones de conductores y vehículos");
         }
       };
       
@@ -53,7 +56,7 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
         resetForm();
       }
     }
-  }, [isOpen, viajeId]);
+  }, [isOpen, viajeId, showError]);
 
   const fetchViaje = async (id) => {
     try {
@@ -61,8 +64,10 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
       const response = await viajesService.getById(id);
       setViaje(response.data);
       setError(null);
+      showSuccess("Datos del viaje cargados correctamente");
     } catch (err) {
       setError("Error al cargar los datos del viaje");
+      showError("Error al cargar los datos del viaje");
       console.error(err);
     } finally {
       setLoading(false);
@@ -102,14 +107,18 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
     try {
       if (isEditing) {
         await viajesService.update(viajeId, viaje);
+        showSuccess("Viaje actualizado correctamente");
       } else {
         console.log("Guardando viaje:", viaje);
         await viajesService.create(viaje);
+        showSuccess("Viaje creado correctamente");
       }
       onClose(true);
     } catch (err) {
       console.error("Error al guardar el viaje:", err);
-      setError(err.response?.data?.message || "Error al guardar el viaje");
+      const errorMessage = err.response?.data?.message || "Error al guardar el viaje";
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -207,7 +216,7 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
             
             <div>
               <label className="block text-sm font-medium mb-1" htmlFor="fecha_llegada">
-                Fecha y Hora de Llegada (estimada)
+                Fecha y Hora de Llegada
               </label>
               <input
                 id="fecha_llegada"
@@ -215,6 +224,7 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
                 type="date"
                 value={viaje.fecha_llegada}
                 onChange={handleChange}
+                required
                 className={`w-full p-2 rounded border ${
                   darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
                 }`}
@@ -224,28 +234,6 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="conductor_id">
-                Conductor
-              </label>
-              <select
-                id="conductor_id"
-                name="conductor_id"
-                value={viaje.conductor_id}
-                onChange={handleChange}
-                className={`w-full p-2 rounded border ${
-                  darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                }`}
-              >
-                <option value="">Seleccione un conductor</option>
-                {conductores.map(conductor => (
-                  <option key={conductor.id} value={conductor.id}>
-                    {conductor.nombre} {conductor.apellido} - {conductor.dni}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
               <label className="block text-sm font-medium mb-1" htmlFor="vehiculo_id">
                 Vehículo
               </label>
@@ -254,85 +242,116 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
                 name="vehiculo_id"
                 value={viaje.vehiculo_id}
                 onChange={handleChange}
+                required
                 className={`w-full p-2 rounded border ${
                   darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
                 }`}
               >
-                <option value="">Seleccione un vehículo</option>
+                <option value="">Seleccionar vehículo</option>
                 {vehiculos.map(vehiculo => (
                   <option key={vehiculo.id} value={vehiculo.id}>
-                    {vehiculo.marca} {vehiculo.modelo} - {vehiculo.patente}
+                    {vehiculo.patente} - {vehiculo.marca} {vehiculo.modelo}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="conductor_id">
+                Conductor
+              </label>
+              <select
+                id="conductor_id"
+                name="conductor_id"
+                value={viaje.conductor_id}
+                onChange={handleChange}
+                required
+                className={`w-full p-2 rounded border ${
+                  darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                }`}
+              >
+                <option value="">Seleccionar conductor</option>
+                {conductores.map(conductor => (
+                  <option key={conductor.id} value={conductor.id}>
+                    {conductor.nombre} {conductor.apellido}
                   </option>
                 ))}
               </select>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="producto">
+              Producto
+            </label>
+            <input
+              id="producto"
+              name="producto"
+              type="text"
+              value={viaje.producto}
+              onChange={handleChange}
+              required
+              className={`w-full p-2 rounded border ${
+                darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+              }`}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="producto">
-                Producto
+              <label className="block text-sm font-medium mb-1" htmlFor="precio">
+                Precio
               </label>
               <input
-                id="producto"
-                name="producto"
-                type="text"
-                value={viaje.producto}
+                id="precio"
+                name="precio"
+                type="number"
+                step="0.01"
+                value={viaje.precio}
                 onChange={handleChange}
+                required
                 className={`w-full p-2 rounded border ${
                   darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
                 }`}
               />
             </div>
+            
             <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="precio">
-                    Precio
-                </label>
-                <input
-                    id="precio"
-                    name="precio"
-                    type="number"
-                    value={viaje.precio}
-                    onChange={handleChange}
-                    className={`w-full p-2 rounded border ${
-                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                    }`}
-                />
+              <label className="block text-sm font-medium mb-1" htmlFor="peso">
+                Peso
+              </label>
+              <input
+                id="peso"
+                name="peso"
+                type="number"
+                step="0.01"
+                value={viaje.peso}
+                onChange={handleChange}
+                required
+                className={`w-full p-2 rounded border ${
+                  darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                }`}
+              />
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
             <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="peso">
-                    Peso
-                </label>
-                <input
-                    id="peso"
-                    name="peso"
-                    type="number"
-                    value={viaje.peso}
-                    onChange={handleChange}
-                    className={`w-full p-2 rounded border ${
-                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                    }`}
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="unidad_medida">
-                    Unidad de Medida
-                </label>
-                <select
-                    id="unidad_medida"
-                    name="unidad_medida"
-                    value={viaje.unidad_medida}
-                    onChange={handleChange}
-                    className={`w-full p-2 rounded border ${
-                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                    }`}
-                >
-                    <option value="Toneladas">Toneladas</option>
-                    <option value="Kilogramos">Kilogramos</option>
-                </select>
+              <label className="block text-sm font-medium mb-1" htmlFor="unidad_medida">
+                Unidad de Medida
+              </label>
+              <select
+                id="unidad_medida"
+                name="unidad_medida"
+                value={viaje.unidad_medida}
+                onChange={handleChange}
+                className={`w-full p-2 rounded border ${
+                  darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                }`}
+              >
+                <option value="Toneladas">Toneladas</option>
+                <option value="Kilogramos">Kilogramos</option>
+                <option value="Litros">Litros</option>
+                <option value="Unidades">Unidades</option>
+              </select>
             </div>
           </div>
           
@@ -350,55 +369,38 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
               }`}
             >
               <option value="Programado">Programado</option>
-              <option value="En progreso">En progreso</option>
+              <option value="En Progreso">En Progreso</option>
               <option value="Completado">Completado</option>
               <option value="Cancelado">Cancelado</option>
             </select>
           </div>
-          {/*}
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="observaciones">
-              Observaciones
-            </label>
-            <textarea
-              id="observaciones"
-              name="observaciones"
-              value={viaje.observaciones}
-              onChange={handleChange}
-              rows={3}
-              className={`w-full p-2 rounded border ${
-                darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-              }`}
-            />
-          </div>
-          */}
-          <div className="flex justify-end space-x-3 pt-4">
+          
+          <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
               onClick={() => onClose(false)}
-              className={`px-4 py-2 rounded flex items-center gap-2 ${
-                darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+              className={`px-4 py-2 rounded flex items-center space-x-2 ${
+                darkMode 
+                  ? 'bg-gray-600 hover:bg-gray-700 text-white' 
+                  : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
               }`}
             >
-              <FaTimes /> Cancelar
+              <FaTimes />
+              <span>Cancelar</span>
             </button>
-            
             <button
               type="submit"
               disabled={loading}
-              className={`px-4 py-2 rounded flex items-center gap-2 ${
-                darkMode ? 'bg-yellow-500 hover:bg-yellow-600 text-gray-900' : 'bg-blue-600 hover:bg-blue-700 text-white'
+              className={`px-4 py-2 rounded flex items-center space-x-2 ${
+                loading
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : darkMode
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
               }`}
             >
-              {loading ? (
-                <>
-                  <span className="animate-spin inline-block">↻</span> Guardando...
-                </>
-              ) : (
-                <>
-                  <FaSave /> {isEditing ? 'Actualizar' : 'Guardar'}
-                </>
-              )}
+              <FaSave />
+              <span>{loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Guardar')}</span>
             </button>
           </div>
         </form>

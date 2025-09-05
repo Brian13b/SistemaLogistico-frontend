@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { vehiculosService } from '../../services/VehiculosService';
 import Modal from '../../components/Modal';
+import { useNotification } from '../../context/NotificationContext';
 
 function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
+    const { showSuccess, showError, showWarning } = useNotification();
     const [vehiculo, setVehiculo] = useState({
         marca: '', 
         modelo: '',
@@ -52,9 +54,11 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
                     });
 
                     setError(null);
+                    showSuccess("Datos del vehículo cargados correctamente");
                 } catch (error) {
                     console.log('Error al cargar los datos del vehículo', error);
                     setError("Error al cargar los datos del vehículo");
+                    showError("Error al cargar los datos del vehículo");
                 } finally {
                     setLoading(false);
                 }
@@ -62,7 +66,7 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
             };
             fetchVehiculoData();
         }
-    }, [isOpen, vehiculoId]);
+    }, [isOpen, vehiculoId, showSuccess, showError]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -76,7 +80,9 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
         e.preventDefault();
 
         if (vehiculo.anio === 0 || vehiculo.tara === 0 || vehiculo.carga_maxima === 0 || vehiculo.kilometraje === 0) {
-            setError("Por favor, asegúrese de que todos los campos tengan valores válidos.");
+            const errorMessage = "Por favor, asegúrese de que todos los campos tengan valores válidos.";
+            setError(errorMessage);
+            showWarning(errorMessage);
             return;
         }
 
@@ -84,14 +90,18 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
             setLoading(true);
             if(vehiculoId) {
                 await vehiculosService.update(vehiculoId, vehiculo);
+                showSuccess("Vehículo actualizado correctamente");
             } else {
                 await vehiculosService.create(vehiculo);
+                showSuccess("Vehículo creado correctamente");
             }
             setError(null);
             onClose(true);
         } catch (error) {
-            console.log('Error al guardar el vehículo', error.response.data);
-            setError("Error al " + (vehiculoId ? 'actualizar' : 'guardar') + " el vehículo");
+            console.log('Error al guardar el vehículo', error.response?.data);
+            const errorMessage = error.response?.data?.message || "Error al guardar el vehículo";
+            setError(errorMessage);
+            showError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -100,216 +110,246 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
     return (
         <Modal 
             isOpen={isOpen} 
-            onClose={onClose} 
-            title={vehiculoId ? 'Editar Vehículo' : 'Nuevo Vehículo'}
+            onClose={() => onClose(false)} 
+            title={vehiculoId ? "Editar Vehículo" : "Nuevo Vehículo"} 
             darkMode={darkMode}
         >
-            {loading ? (
-                <div className="flex justify-center p-4">
-                    <p>Cargando...</p>
+            {loading && vehiculoId ? (
+                <div className="flex justify-center items-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500"></div>
+                    <p className="ml-2">Cargando datos...</p>
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {error && (
-                        <div className="p-3 bg-red-100 text-red-700 rounded-md">
+                        <div className={`p-3 rounded-md ${darkMode ? 'bg-red-900 text-red-100' : 'bg-red-100 text-red-800'}`}>
                             {error}
                         </div>
                     )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="codigo" className="block text-sm font-medium mb-1">Código</label>
-                            <input 
-                                type="text" 
-                                id="codigo" 
-                                name="codigo" 
+                            <label className="block text-sm font-medium mb-1" htmlFor="codigo">
+                                Código
+                            </label>
+                            <input
+                                id="codigo"
+                                name="codigo"
+                                type="text"
                                 value={vehiculo.codigo}
                                 onChange={handleChange}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
+                                className={`w-full p-2 rounded border ${
                                     darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
                                 }`}
                             />
                         </div>
+                        
                         <div>
-                            <label htmlFor="marca" className="block text-sm font-medium mb-1">Marca</label>
-                            <input 
-                                type="text" 
-                                id="marca" 
-                                name="marca" 
-                                value={vehiculo.marca}
-                                onChange={handleChange} 
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="modelo" className="block text-sm font-medium mb-1">Modelo</label>
-                            <input 
-                                type="text" 
-                                id="modelo" 
-                                name="modelo" 
-                                value={vehiculo.modelo}
-                                onChange={handleChange} 
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="patente" className="block text-sm font-medium mb-1">Patente</label>
-                            <input 
-                                type="text" 
-                                id="patente" 
-                                name="patente" 
-                                value={vehiculo.patente}
-                                onChange={handleChange} 
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="anio" className="block text-sm font-medium mb-1">Año</label>
-                            <input 
-                                type="number" 
-                                id="anio" 
-                                name="anio" 
-                                value={vehiculo.anio}
-                                onChange={handleChange} 
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="tipo" className="block text-sm font-medium mb-1">Tipo</label>
-                            <select 
-                                type="text" 
-                                id="tipo" 
-                                name="tipo" 
-                                value={vehiculo.tipo}
-                                onChange={handleChange} 
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            >
-                                <option value="CAMION">Camión</option>
-                                <option value="CAMIONETA">Furgoneta</option>
-                                <option value="AUTO">Auto</option>
-                                <option value="MOTO">Moto</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="tara" className="block text-sm font-medium mb-1">Tara</label>
-                            <input 
-                                type="number" 
-                                id="tara" 
-                                name="tara" 
-                                value={vehiculo.tara}
-                                onChange={handleChange} 
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="carga_maxima" className="block text-sm font-medium mb-1">Carga Máxima</label>
-                            <input 
-                                type="number" 
-                                id="carga_maxima" 
-                                name="carga_maxima" 
-                                value={vehiculo.carga_maxima}
-                                onChange={handleChange} 
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="kilometraje" className="block text-sm font-medium mb-1">Kilometraje</label>
-                            <input 
-                                type="number" 
-                                id="kilometraje" 
-                                name="kilometraje" 
-                                value={vehiculo.kilometraje}
-                                onChange={handleChange}
-                                required
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                                }`}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="estado" className="block text-sm font-medium mb-1">Estado</label>
+                            <label className="block text-sm font-medium mb-1" htmlFor="estado">
+                                Estado
+                            </label>
                             <select
                                 id="estado"
                                 name="estado"
                                 value={vehiculo.estado}
                                 onChange={handleChange}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
+                                required
+                                className={`w-full p-2 rounded border ${
                                     darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
                                 }`}
                             >
-                                <option value="ACTIVO">Activo</option>
-                                <option value="INACTIVO">Inactivo</option>
+                                <option value="">Seleccionar estado</option>
+                                <option value="Activo">Activo</option>
+                                <option value="En Mantenimiento">En Mantenimiento</option>
+                                <option value="Fuera de Servicio">Fuera de Servicio</option>
                             </select>
                         </div>
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="id_conductor" className="block text-sm font-medium mb-1">Conductor</label>
+                            <label className="block text-sm font-medium mb-1" htmlFor="marca">
+                                Marca
+                            </label>
                             <input
-                                type="number"
-                                id="id_conductor"
-                                name="id_conductor"
-                                value={vehiculo.id_conductor}
+                                id="marca"
+                                name="marca"
+                                type="text"
+                                value={vehiculo.marca}
                                 onChange={handleChange}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
+                                required
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="modelo">
+                                Modelo
+                            </label>
+                            <input
+                                id="modelo"
+                                name="modelo"
+                                type="text"
+                                value={vehiculo.modelo}
+                                onChange={handleChange}
+                                required
+                                className={`w-full p-2 rounded border ${
                                     darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
                                 }`}
                             />
                         </div>
                     </div>
-                    <div className="flex justify-end pt-4 space-x-3">
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
-                            className={`px-4 py-2 rounded-md ${
-                                darkMode ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="patente">
+                                Patente
+                            </label>
+                            <input
+                                id="patente"
+                                name="patente"
+                                type="text"
+                                value={vehiculo.patente}
+                                onChange={handleChange}
+                                required
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="anio">
+                                Año
+                            </label>
+                            <input
+                                id="anio"
+                                name="anio"
+                                type="number"
+                                value={vehiculo.anio}
+                                onChange={handleChange}
+                                required
+                                min="1900"
+                                max={new Date().getFullYear() + 1}
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="tipo">
+                                Tipo
+                            </label>
+                            <select
+                                id="tipo"
+                                name="tipo"
+                                value={vehiculo.tipo}
+                                onChange={handleChange}
+                                required
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            >
+                                <option value="">Seleccionar tipo</option>
+                                <option value="Camión">Camión</option>
+                                <option value="Camioneta">Camioneta</option>
+                                <option value="Furgón">Furgón</option>
+                                <option value="Remolque">Remolque</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="kilometraje">
+                                Kilometraje
+                            </label>
+                            <input
+                                id="kilometraje"
+                                name="kilometraje"
+                                type="number"
+                                value={vehiculo.kilometraje}
+                                onChange={handleChange}
+                                required
+                                min="0"
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="tara">
+                                Tara (kg)
+                            </label>
+                            <input
+                                id="tara"
+                                name="tara"
+                                type="number"
+                                value={vehiculo.tara}
+                                onChange={handleChange}
+                                required
+                                min="0"
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="carga_maxima">
+                                Carga Máxima (kg)
+                            </label>
+                            <input
+                                id="carga_maxima"
+                                name="carga_maxima"
+                                type="number"
+                                value={vehiculo.carga_maxima}
+                                onChange={handleChange}
+                                required
+                                min="0"
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end space-x-2 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => onClose(false)}
+                            className={`px-4 py-2 rounded ${
+                                darkMode 
+                                    ? 'bg-gray-600 hover:bg-gray-700 text-white' 
+                                    : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
                             }`}
                         >
                             Cancelar
                         </button>
-                        <button 
-                            type="submit" 
-                            className={`px-4 py-2 rounded-md ${
-                                darkMode 
-                                ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-600' 
-                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className={`px-4 py-2 rounded ${
+                                loading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : darkMode
+                                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
                             }`}
                         >
-                            {vehiculoId ? 'Actualizar' : 'Guardar'}
+                            {loading ? 'Guardando...' : (vehiculoId ? 'Actualizar' : 'Guardar')}
                         </button>
                     </div>
                 </form>
             )}
         </Modal>
-    );      
+    );
 }
 
 export default VehiculoNuevoModal;

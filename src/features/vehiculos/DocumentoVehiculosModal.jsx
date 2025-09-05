@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
 import { vehiculoDocumentosService } from "../../services/VehiculoDocumentosServices";
 import { FaUpload, FaTrash } from "react-icons/fa";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 
 function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
   const [documentos, setDocumentos] = useState([]);
@@ -18,6 +19,8 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
     esta_activo: true,
   });
   const [file, setFile] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [documentoToDelete, setDocumentoToDelete] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -140,15 +143,22 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
     }
   };
 
-  const handleDelete = async (documentoId) => {
-    if (!window.confirm("¿Está seguro que desea eliminar este documento?"))
-      return;
+  const handleDeleteClick = (documentoId) => {
+    setDocumentoToDelete(documentoId);
+    setConfirmOpen(true); 
 
+  };
+
+  const confirmDelete = async () => {
+    if (!documentoToDelete) return;
     try {
-      await vehiculoDocumentosService.delete(documentoId);
+      await vehiculoDocumentosService.delete(documentoToDelete);
       fetchDocumentos();
     } catch (err) {
-      setError("Error al eliminar el documento");
+      console.error("Error al eliminar documento:", err);
+    } finally {
+      setConfirmOpen(false);
+      setDocumentoToDelete(null);
     }
   };
 
@@ -386,7 +396,7 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
                             />
                           </button>
                           <button
-                            onClick={() => handleDelete(doc.id)}
+                            onClick={() => handleDeleteClick(doc.id)}
                             className={`p-1 rounded ${
                               darkMode
                                 ? "hover:bg-gray-600 text-red-500"
@@ -424,6 +434,16 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title="Confirmar eliminación"
+        message="¿Está seguro que desea eliminar este documento?"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+        darkMode={darkMode}
+      />
+
     </Modal>
   );
 }

@@ -5,87 +5,103 @@ import PersonalInfoModal from '../../features/auth/PersonalInfoModal';
 import UserConfigModal from '../../features/auth/UserConfigModal';
 import { userService } from '../../services/UserService';
 import { useTheme } from '../../context/ThemeContext';
+import { useNotification } from '../../context/NotificationContext';
 
-export default function PerfilMenu({ onLogout, isSidebarCollapsed, user}) {
+export default function PerfilMenu({ onLogout, isSidebarCollapsed, user }) {
   const { darkMode } = useTheme();
+  const { showSuccess, showError, showInfo } = useNotification();
   const [isOpen, setIsOpen] = useState(false);
   const [isPersonalInfoModalOpen, setIsPersonalInfoModalOpen] = useState(false);
   const [isUserConfigModalOpen, setIsUserConfigModalOpen] = useState(false);
   const navigate = useNavigate();
-  
+
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
-  
+
   const handleLogout = () => {
     onLogout();
     navigate('/');
+    showInfo('Sesión cerrada');
     console.log("Cerrando sesión...");
   };
-  
+
   const handlePersonalInfo = () => {
     setIsPersonalInfoModalOpen(true);
     setIsOpen(false);
   };
-  
+
   const handleSettings = () => {
     if (user.role === 'ADMINISTRADOR') {
       setIsUserConfigModalOpen(true);
       setIsOpen(false);
     } else {
-      alert('Solo los administradores pueden acceder a esta configuración');
+      showError('Solo los administradores pueden acceder a esta configuración');
     }
   };
-  
+
   const handleUpdateUser = (updatedUser) => {
     console.log('Actualizando usuario:', updatedUser);
   };
 
   const handleAddUser = async (newUser) => {
-    const register = await userService.registerUser(newUser);
-    if (register) {
-      alert('Usuario agregado correctamente');
-    } else {
-      alert('Error al agregar usuario');
+    try {
+      const register = await userService.registerUser(newUser);
+      if (register) {
+        showSuccess('Usuario agregado correctamente');
+      } else {
+        showError('Error al agregar usuario');
+      }
+      console.log('Agregando usuario:', newUser);
+    } catch (error) {
+      showError('Error inesperado al agregar usuario');
     }
-    
-    console.log('Agregando usuario:', newUser);
   };
 
   const handleEditUser = async (username, updatedUser) => {
     try {
       const result = await userService.updateUser(username, updatedUser);
       if (result) {
-        alert('Usuario actualizado correctamente');
+        showSuccess('Usuario actualizado correctamente');
         return true;
+      } else {
+        showError('No se pudo actualizar el usuario');
+        return false;
       }
     } catch (error) {
-      alert('Error al actualizar usuario');
+      showError('Error al actualizar usuario');
       return false;
     }
   };
 
-  const handleDeleteUser = (user) => {
-    console.log('Eliminando usuario:', user);
+  const handleDeleteUser = async (username) => {
+    try {
+      await userService.deleteUser(username);
+      showSuccess('Usuario eliminado correctamente');
+    } catch (error) {
+      showError('Error al eliminar usuario');
+    }
   };
 
   return (
     <>
       <div className="relative">
-        <button 
-          onClick={toggleMenu} 
+        <button
+          onClick={toggleMenu}
           className={`flex items-center space-x-3 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded p-2 w-full`}
         >
           <FaUser className={darkMode ? 'text-yellow-400' : 'text-blue-600'} />
           {!isSidebarCollapsed && <span>Perfil</span>}
         </button>
-        
+
         {isOpen && (
-          <div className={`absolute bottom-full left-0 w-48 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-200 text-gray-900'} border rounded-md shadow-lg`}>
+          <div
+            className={`absolute bottom-full left-0 w-48 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-200 text-gray-900'} border rounded-md shadow-lg`}
+          >
             <ul>
               <li>
-                <button 
-                  onClick={handlePersonalInfo} 
+                <button
+                  onClick={handlePersonalInfo}
                   className={`flex items-center w-full px-4 py-2 text-left ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                 >
                   <FaUser className="mr-2" />
@@ -93,8 +109,8 @@ export default function PerfilMenu({ onLogout, isSidebarCollapsed, user}) {
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={handleSettings} 
+                <button
+                  onClick={handleSettings}
                   className={`flex items-center w-full px-4 py-2 text-left ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                 >
                   <FaCog className="mr-2" />
@@ -102,8 +118,8 @@ export default function PerfilMenu({ onLogout, isSidebarCollapsed, user}) {
                 </button>
               </li>
               <li className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <button 
-                  onClick={handleLogout} 
+                <button
+                  onClick={handleLogout}
                   className={`flex items-center w-full px-4 py-2 text-left text-red-500 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                 >
                   <FaSignOutAlt className="mr-2" />
@@ -115,25 +131,24 @@ export default function PerfilMenu({ onLogout, isSidebarCollapsed, user}) {
         )}
       </div>
 
-      <PersonalInfoModal 
+      <PersonalInfoModal
         isOpen={isPersonalInfoModalOpen}
         onClose={() => setIsPersonalInfoModalOpen(false)}
         user={user}
         onUpdateUser={handleUpdateUser}
         darkMode={darkMode}
       />
-  
-        {user.role === 'ADMINISTRADOR' && (
-          <UserConfigModal 
-            isOpen={isUserConfigModalOpen}
-            onClose={() => setIsUserConfigModalOpen(false)}
-            onAddUser={handleAddUser}
-            onEditUser={handleEditUser}
-            onDeleteUser={handleDeleteUser}
-            darkMode={darkMode}
-          />
-        )}
-          
-      </>
-    );
-  }
+
+      {user.role === 'ADMINISTRADOR' && (
+        <UserConfigModal
+          isOpen={isUserConfigModalOpen}
+          onClose={() => setIsUserConfigModalOpen(false)}
+          onAddUser={handleAddUser}
+          onEditUser={handleEditUser}
+          onDeleteUser={handleDeleteUser}
+          darkMode={darkMode}
+        />
+      )}
+    </>
+  );
+}

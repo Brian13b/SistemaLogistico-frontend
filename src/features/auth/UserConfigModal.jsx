@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { FaUserPlus, FaEdit, FaTrash, FaTimes, FaSave } from 'react-icons/fa';
 import { userService } from '../../services/UserService';
+import { useNotification } from '../../context/NotificationContext';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+
 
 const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser, darkMode }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +18,9 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
   const [currentEditingUsername, setCurrentEditingUsername] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     if (isOpen) {
@@ -31,7 +37,8 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
       setUsers(userList);
     } catch (error) {
       setError('Error al cargar usuarios');
-      console.error('Error fetching users:', error);
+      console.error('Error al cargar usuarios:', error);
+      showError('Error al cargar usuarios');
     } finally {
       setIsLoading(false);
     }
@@ -67,31 +74,41 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
           delete updateData.password;
         }
         await onEditUser(currentEditingUsername, updateData);
+        showSuccess('Usuario actualizado correctamente');
       } else {
         if (!formData.password) {
           throw new Error('La contraseña es requerida');
         }
         await onAddUser(formData);
+        showSuccess('Usuario agregado correctamente');
       }
       resetForm();
       fetchUsers();
     } catch (error) {
       setError(error.message || `Error al ${isEditing ? 'actualizar' : 'agregar'} usuario`);
       console.error('Submission error:', error);
+      showError(error.message || 'Ocurrió un error');
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (window.confirm('¿Está seguro de eliminar este usuario?')) {
-      try {
-        await onDeleteUser(userId);
-        fetchUsers();
-      } catch (error) {
-        setError('Error al eliminar usuario');
-        console.error('Delete error:', error);
-      }
-    }
+  const handleDeleteRequest = (username) => {
+    setUserToDelete(username);
+    setConfirmOpen(true);
   };
+
+  const confirmDelete = async () => {
+    try {
+      await onDeleteUser(userToDelete);
+      fetchUsers();
+      showSuccess('Usuario eliminado correctamente');
+    } catch (error) {
+      console.error('Delete error:', error);
+      showError('Error al eliminar usuario');
+    } finally {
+      setConfirmOpen(false);
+      setUserToDelete(null);
+    }
+  };  
 
   const resetForm = () => {
     setFormData({
@@ -116,8 +133,8 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2
-            className={`text-xl font-bold flex items-center rounded-full p-2 
-              ${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-900'}`}
+            className={`text-xl font-bold flex items-center p-2 
+              ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}
           >
             <FaUserPlus className="mr-2" />
             {isEditing ? 'Editar Usuario' : 'Configuración de Usuarios'}
@@ -311,7 +328,7 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
                       <FaEdit />
                     </button>
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDeleteRequest(user.username)}
                       className={`p-2 rounded transition-colors 
                         ${darkMode
                           ? 'text-red-400 hover:bg-red-900'
@@ -327,6 +344,15 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title="Confirmar eliminación"
+        message={`¿Estás seguro de que deseas eliminar al usuario "${userToDelete}"? Esta acción no se puede deshacer.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+        darkMode={darkMode}
+      />
     </div>
   );
 };

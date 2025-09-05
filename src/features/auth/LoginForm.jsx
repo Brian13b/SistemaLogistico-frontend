@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 import { jwtDecode } from 'jwt-decode';
 
 function LoginForm({ darkMode }) {
@@ -9,6 +10,7 @@ function LoginForm({ darkMode }) {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showSuccess, showError, showWarning } = useNotification();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,6 +30,8 @@ function LoginForm({ darkMode }) {
       const decodedToken = jwtDecode(userData.access_token);
       const role = decodedToken.role.toUpperCase();
   
+      showSuccess(`Bienvenido ${decodedToken.sub}!`);
+  
       if (role === 'ADMINISTRADOR') {
         console.log("Redirigiendo como administrador...");
         navigate('logged-in/dashboard');
@@ -41,7 +45,9 @@ function LoginForm({ darkMode }) {
       
     } catch (error) {
       console.error("Error en el login", error);
-      setError("Error en el login: " + (error.response?.data?.message || error.message));
+      const errorMessage = error.response?.data?.message || error.message;
+      setError("Error en el login: " + errorMessage);
+      showError("Error en el login: " + errorMessage);
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
 import { conductorDocumentosService } from "../../services/ConductorDocumentosServices";
 import { FaUpload, FaTrash } from "react-icons/fa";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 
 function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre, darkMode}) {
   const [documentos, setDocumentos] = useState([]);
@@ -18,6 +19,8 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
     esta_activo: true,
   });
   const [file, setFile] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [docToDelete, setDocToDelete] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -137,15 +140,20 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
     }
   };
 
-  const handleDelete = async (documentoId) => {
-    if (!window.confirm("¿Está seguro que desea eliminar este documento?"))
-      return;
+  const requestDelete = (documentoId) => {
+    setDocToDelete(documentoId);
+    setConfirmOpen(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      await conductorDocumentosService.delete(documentoId);
+      await conductorDocumentosService.delete(docToDelete);
       fetchDocumentos();
     } catch (err) {
       setError("Error al eliminar el documento");
+    } finally {
+      setConfirmOpen(false);
+      setDocToDelete(null);
     }
   };
 
@@ -383,7 +391,7 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
                             />
                           </button>
                           <button
-                            onClick={() => handleDelete(doc.id)}
+                            onClick={() => requestDelete(doc.id)}
                             className={`p-1 rounded ${
                               darkMode
                                 ? "hover:bg-gray-600 text-red-500"
@@ -420,6 +428,15 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
             Cerrar
           </button>
         </div>
+        
+        <ConfirmDialog
+          isOpen={confirmOpen}
+          title="Confirmar eliminación"
+          message={`¿Estás seguro de que deseas eliminar este documento? Esta acción no se puede deshacer.`}
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmOpen(false)}
+          darkMode={darkMode}
+        />
       </div>
     </Modal>
   );

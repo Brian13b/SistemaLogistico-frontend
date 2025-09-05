@@ -7,8 +7,7 @@ import { vehiculoDocumentosService } from '../../services/VehiculoDocumentosServ
 import { conductorDocumentosService } from '../../services/ConductorDocumentosServices';
 import { viajesDocumentosService } from '../../services/ViajesDocumentosService';
 import { viajesService } from '../../services/ViajesService';
-import { FaTruck, FaUser, FaRoute, FaFilter, FaPlus } from 'react-icons/fa';
-import { GraficoBarras } from '../../components/charts/GraficoBarras';
+import { FaTruck, FaUser, FaRoute, FaCheckCircle, FaExclamationTriangle, FaTools, FaGasPump } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function Dashboard({ userRole }) {
@@ -18,19 +17,114 @@ export default function Dashboard({ userRole }) {
   const [conductores, setConductores] = useState([]);
   const [viajes, setViajes] = useState([]);
   const [vencimientos, setVencimientos] = useState([]);
+  const [actividadReciente, setActividadReciente] = useState([]);
 
-  const data = {
-    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-    datasets: [
+  // Generar actividad reciente simulada
+  const generarActividadReciente = () => {
+    const actividades = [
       {
-        label: "Gastos",
-        data: [30, 40, 20, 5, 10, 15, 10, 0, 0, 0, 0, 0],
-        backgroundColor: "rgb(251, 192, 45)",
-        borderWidth: 1,
+        id: 1,
+        tipo: 'viaje_completado',
+        titulo: 'Viaje Completado',
+        descripcion: 'Viaje #V-2024-001 de Buenos Aires a Córdoba completado exitosamente',
+        tiempo: 'Hace 2 horas',
+        icono: FaCheckCircle,
+        color: 'green',
+        vehiculo: 'ABC-123',
+        conductor: 'Juan Pérez'
       },
-    ],
+      {
+        id: 2,
+        tipo: 'gasto_combustible',
+        titulo: 'Gasto de Combustible',
+        descripcion: 'Se registró gasto de $45,000 en combustible para vehículo DEF-456',
+        tiempo: 'Hace 4 horas',
+        icono: FaGasPump,
+        color: 'blue',
+        vehiculo: 'DEF-456',
+        monto: '$45,000'
+      },
+      {
+        id: 3,
+        tipo: 'mantenimiento_programado',
+        titulo: 'Mantenimiento Programado',
+        descripcion: 'Mantenimiento preventivo programado para vehículo GHI-789',
+        tiempo: 'Hace 6 horas',
+        icono: FaTools,
+        color: 'yellow',
+        vehiculo: 'GHI-789',
+        fecha: '15/12/2024'
+      },
+      {
+        id: 4,
+        tipo: 'documento_vencimiento',
+        titulo: 'Documento por Vencer',
+        descripcion: 'VTV del vehículo JKL-012 vence en 5 días',
+        tiempo: 'Hace 8 horas',
+        icono: FaExclamationTriangle,
+        color: 'red',
+        vehiculo: 'JKL-012',
+        dias: 5
+      },
+      {
+        id: 5,
+        tipo: 'nuevo_viaje',
+        titulo: 'Nuevo Viaje Creado',
+        descripcion: 'Viaje #V-2024-002 de Rosario a Mendoza programado',
+        tiempo: 'Hace 12 horas',
+        icono: FaRoute,
+        color: 'purple',
+        origen: 'Rosario',
+        destino: 'Mendoza'
+      },
+      {
+        id: 6,
+        tipo: 'conductor_registrado',
+        titulo: 'Conductor Registrado',
+        descripcion: 'Nuevo conductor Carlos Rodríguez agregado al sistema',
+        tiempo: 'Hace 1 día',
+        icono: FaUser,
+        color: 'indigo',
+        conductor: 'Carlos Rodríguez'
+      }
+    ];
+
+    return actividades;
   };
-  
+
+  // Generar proximos vencimientos simulados
+  const generarProximosVencimientos = () => {
+    const hoy = new Date();
+    const proximosVencimientos = [
+      {
+        id: 1,
+        tipo: 'vehiculo',
+        descripcion: 'VTV del vehículo ABC-123 vence en 5 días',
+        fecha: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 5),
+        critico: false,
+        warning: true
+      },
+      {
+        id: 2,
+        tipo: 'conductor',
+        descripcion: 'Licencia de conducir de Juan Pérez vence en 10 días',
+        fecha: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 10),
+        critico: false,
+        warning: true
+      },
+      {
+        id: 3,
+        tipo: 'vehiculo',
+        descripcion: 'Seguro del vehículo ABC-123 vence el 15/12/2024',
+        fecha: new Date(2024, 11, 15),
+        critico: false,
+        warning: false
+      }
+    ];
+
+    return proximosVencimientos;
+  };
+
   useEffect(() => {
     const fetchVehiculos = async () => {
       try {
@@ -104,122 +198,158 @@ export default function Dashboard({ userRole }) {
     fetchConductores();
     fetchViajes();
     fetchVencimientos();
+    
+    // Generar actividad reciente
+    setActividadReciente(generarActividadReciente());
+
+    if (vencimientos.length === 0) {
+      setVencimientos(generarProximosVencimientos());
+    }
   }, []);
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
     const date = new Date(dateString);
     return date.toLocaleDateString('es-ES', options);
-  }
+  };
+
+  const getActividadIcon = (actividad) => {
+    const Icon = actividad.icono;
+    const colorClasses = {
+      green: darkMode ? 'text-green-400' : 'text-green-600',
+      blue: darkMode ? 'text-blue-400' : 'text-blue-600',
+      yellow: darkMode ? 'text-yellow-400' : 'text-yellow-600',
+      red: darkMode ? 'text-red-400' : 'text-red-600',
+      purple: darkMode ? 'text-purple-400' : 'text-purple-600',
+      indigo: darkMode ? 'text-indigo-400' : 'text-indigo-600'
+    };
+    
+    return <Icon className={`h-5 w-5 ${colorClasses[actividad.color]}`} />;
+  };
   
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          Dashboard
+        </h1>
+        <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mt-1`}>
+          Resumen general del sistema de gestión de flotas
+        </p>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna izquierda - Resumen y Notificaciones */}
-        <div className="md:col-span-1 space-y-6">
-          {/* Panel de Resumen */}
-          <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-            <h2 className="text-lg font-semibold mb-4">Resumen General</h2>
-            <p className={`${darkMode ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
-              Bienvenido al sistema de gestión de viajes. Aquí puedes ver un resumen de los vehículos, conductores y viajes activos.
-            </p>
-            <p className={`${darkMode ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
-              Elige una opción del menú para comenzar a gestionar los viajes.
-            </p>
-            <p className={`${darkMode ? 'text-gray-200' : 'text-gray-700'} italic`}>
-              Si eres administrador, puedes gestionar los viajes, conductores y vehículos desde el perfil.
-            </p>
-          </div>
-  
-          {/* Panel de Notificaciones/Eventos */}
-          <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Próximos Vencimientos</h2>
-              <span className={`px-2 py-1 text-xs rounded-full ${
-                darkMode ? 'bg-yellow-900 text-yellow-200' : 'bg-yellow-100 text-yellow-800'
-              }`}>
-                {vencimientos.length} pendientes
-              </span>
-            </div>
+        <div className="lg:col-span-1 space-y-6">
+          {/* Actividad Reciente */}
+          <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <h2 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Actividad Reciente
+            </h2>
             
-            <div className="space-y-3">
-              {vencimientos.length > 0 ? (
-                vencimientos.slice(0, 5).map((item, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-3 rounded-lg flex items-start ${
-                      darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-100'
-                    } border ${
-                      darkMode ? 'border-gray-600' : 'border-gray-200'
-                    }`}
-                  >
-                    <div className={`flex-shrink-0 mt-1 w-2 h-2 rounded-full ${
-                      item.critico 
-                        ? 'bg-red-500' 
-                        : item.warning
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
-                    }`}></div>
-                    <div className="ml-3 flex-1">
-                      <div className="flex justify-between">
-                        <p className="font-medium">{item.tipo}</p>
-                        <span className={`text-xs ${
-                          darkMode ? 'text-gray-400' : 'text-gray-500'
+            <div className="space-y-4">
+              {actividadReciente.map((actividad) => (
+                <div 
+                  key={actividad.id} 
+                  className={`p-3 rounded-lg border-l-4 ${
+                    actividad.color === 'green'
+                      ? darkMode 
+                        ? 'bg-green-900 border-green-500' 
+                        : 'bg-green-50 border-green-500'
+                      : actividad.color === 'blue'
+                        ? darkMode 
+                          ? 'bg-blue-900 border-blue-500' 
+                          : 'bg-blue-50 border-blue-500'
+                        : actividad.color === 'yellow'
+                          ? darkMode 
+                            ? 'bg-yellow-900 border-yellow-500' 
+                            : 'bg-yellow-50 border-yellow-500'
+                          : actividad.color === 'red'
+                            ? darkMode 
+                              ? 'bg-red-900 border-red-500' 
+                              : 'bg-red-50 border-red-500'
+                            : actividad.color === 'purple'
+                              ? darkMode 
+                                ? 'bg-purple-900 border-purple-500' 
+                                : 'bg-purple-50 border-purple-500'
+                              : darkMode 
+                                ? 'bg-indigo-900 border-indigo-500' 
+                                : 'bg-indigo-50 border-indigo-500'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-1">
+                      {getActividadIcon(actividad)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className={`font-medium text-sm ${
+                            actividad.color === 'green'
+                              ? darkMode ? 'text-green-200' : 'text-green-800'
+                              : actividad.color === 'blue'
+                                ? darkMode ? 'text-blue-200' : 'text-blue-800'
+                                : actividad.color === 'yellow'
+                                  ? darkMode ? 'text-yellow-200' : 'text-yellow-800'
+                                  : actividad.color === 'red'
+                                    ? darkMode ? 'text-red-200' : 'text-red-800'
+                                    : actividad.color === 'purple'
+                                      ? darkMode ? 'text-purple-200' : 'text-purple-800'
+                                      : darkMode ? 'text-indigo-200' : 'text-indigo-800'
+                          }`}>
+                            {actividad.titulo}
+                          </p>
+                          <p className={`text-xs mt-1 ${
+                            actividad.color === 'green'
+                              ? darkMode ? 'text-green-300' : 'text-green-600'
+                              : actividad.color === 'blue'
+                                ? darkMode ? 'text-blue-300' : 'text-blue-600'
+                                : actividad.color === 'yellow'
+                                  ? darkMode ? 'text-yellow-300' : 'text-yellow-600'
+                                  : actividad.color === 'red'
+                                    ? darkMode ? 'text-red-300' : 'text-red-600'
+                                    : actividad.color === 'purple'
+                                      ? darkMode ? 'text-purple-300' : 'text-purple-600'
+                                      : darkMode ? 'text-indigo-300' : 'text-indigo-600'
+                          }`}>
+                            {actividad.descripcion}
+                          </p>
+                        </div>
+                        <span className={`text-xs font-medium ${
+                          actividad.color === 'green'
+                            ? darkMode ? 'text-green-200' : 'text-green-800'
+                            : actividad.color === 'blue'
+                              ? darkMode ? 'text-blue-200' : 'text-blue-800'
+                              : actividad.color === 'yellow'
+                                ? darkMode ? 'text-yellow-200' : 'text-yellow-800'
+                                : actividad.color === 'red'
+                                  ? darkMode ? 'text-red-200' : 'text-red-800'
+                                  : actividad.color === 'purple'
+                                    ? darkMode ? 'text-purple-200' : 'text-purple-800'
+                                    : darkMode ? 'text-indigo-200' : 'text-indigo-800'
                         }`}>
-                          {item.fecha}
+                          {actividad.tiempo}
                         </span>
                       </div>
-                      <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
-                        {item.descripcion}
-                      </p>
-                      {item.entidad === 'vehiculo' && (
-                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
-                          Vehículo ID: {item.vehiculo}
-                        </p>
-                      )}
-                      {item.entidad === 'conductor' && (
-                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
-                          Conductor ID: {item.conductor}
-                        </p>
-                      )}
-                      {item.entidad === 'viaje' && (
-                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
-                          Viaje ID: {item.viaje}
-                        </p>
-                      )}
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 italic text-center py-4">
-                  No hay vencimientos próximos
-                </p>
-              )}
+                </div>
+              ))}
             </div>
             
-            {vencimientos.length > 5 && (
-              <button className={`mt-4 w-full text-sm py-2 rounded-lg ${
-                darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
-              }`}>
-                Ver todos ({vencimientos.length})
-              </button>
-            )}
+            <button className={`mt-4 w-full text-sm py-2 rounded-lg ${
+              darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+            }`}>
+              Ver toda la actividad
+            </button>
           </div>
+  
+          
         </div>
   
         {/* Columna derecha - Contenido principal */}
-        <div className="md:col-span-1 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
           {/* Tarjetas de Resumen */}
-          <div className={`rounded-lg overflow-hidden p-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'} alingn-items-center`}>
-            <GraficoBarras
-              title="Ventas por mes" 
-              data={data} 
-              options={{ responsive: true }}
-            />
-          </div>
-          {/* Tarjetas de Vehículos y Conductores */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <DashboardCard 
               title="Vehículos" 
@@ -236,11 +366,11 @@ export default function Dashboard({ userRole }) {
               trend={conductores}
             />
           </div>
-  
+
           {/* Tabla de Viajes Activos */}
-          <div className={`rounded-lg overflow-hidden p-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+          <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 Viajes Activos
               </h2>
             </div>
@@ -282,6 +412,64 @@ export default function Dashboard({ userRole }) {
                   }))
               }
             />
+          </div>
+
+          {/* Panel de Vencimientos */}
+          <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <h2 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Vencimientos Próximos
+            </h2>
+            
+            <div className="space-y-3">
+              {vencimientos.slice(0, 5).map((vencimiento, index) => (
+                <div 
+                  key={index} 
+                  className={`p-3 rounded-lg border-l-4 ${
+                    vencimiento.critico 
+                      ? darkMode 
+                        ? 'bg-red-900 border-red-500' 
+                        : 'bg-red-50 border-red-500'
+                      : darkMode 
+                        ? 'bg-yellow-900 border-yellow-500' 
+                        : 'bg-yellow-50 border-yellow-500'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className={`font-medium text-sm ${
+                        vencimiento.critico 
+                          ? darkMode ? 'text-red-200' : 'text-red-800'
+                          : darkMode ? 'text-yellow-200' : 'text-yellow-800'
+                      }`}>
+                        {vencimiento.tipo}
+                      </p>
+                      <p className={`text-xs ${
+                        vencimiento.critico 
+                          ? darkMode ? 'text-red-300' : 'text-red-600'
+                          : darkMode ? 'text-yellow-300' : 'text-yellow-600'
+                      }`}>
+                        {vencimiento.descripcion}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-medium ${
+                      vencimiento.critico 
+                        ? darkMode ? 'text-red-200' : 'text-red-800'
+                        : darkMode ? 'text-yellow-200' : 'text-yellow-800'
+                    }`}>
+                      {formatDate(vencimiento.fecha)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {vencimientos.length > 5 && (
+              <button className={`mt-4 w-full text-sm py-2 rounded-lg ${
+                darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+              }`}>
+                Ver todos ({vencimientos.length})
+              </button>
+            )}
           </div>
         </div>
       </div>

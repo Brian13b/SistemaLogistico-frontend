@@ -180,7 +180,10 @@ function Viajes() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gestión de Viajes</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Gestión de Viajes</h1>
+          <p className={`${darkMode ? 'text-white' : 'text-gray-600'} mt-1`}>Planifica, asigna y rastrea todos los viajes de tu flota</p>
+        </div>
         <button 
           className={`px-4 py-2 rounded flex items-center gap-2 ${
             darkMode ? 'bg-yellow-500 text-gray-900' : 'bg-blue-600 text-white'

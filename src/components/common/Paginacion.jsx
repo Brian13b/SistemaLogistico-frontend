@@ -22,7 +22,7 @@ export const Pagination = ({ paginaActual, totalPaginas, onPageChange, currentIt
 
   return (
     <div className={`flex justify-between items-center p-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-      <div className="text-md text-gray-700 dark:text-gray-300">
+      <div className={`text-md ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
         Mostrando {currentItems.length } de {totalItems} elementos
       </div>
       <div className="flex items-center space-x-2">

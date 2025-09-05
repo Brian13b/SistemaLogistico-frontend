@@ -1,7 +1,7 @@
 import { useTheme } from '../../context/ThemeContext';
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export const GraficoBarras = ({ title, data, className = "" }) => {
+export const GraficoLineas = ({ title, data, className = "" }) => {
   const { darkMode } = useTheme();
 
   const chartColors = {
@@ -24,7 +24,7 @@ export const GraficoBarras = ({ title, data, className = "" }) => {
 
   // Convertir datos de Chart.js a formato Recharts
   const rechartsData = data.labels.map((label, index) => ({
-    mes: label,
+    periodo: label,
     valor: data.datasets[0].data[index],
   }));
 
@@ -38,18 +38,20 @@ export const GraficoBarras = ({ title, data, className = "" }) => {
         </div>
       )}
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={rechartsData}>
+        <LineChart data={rechartsData}>
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-          <XAxis dataKey="mes" stroke={chartColors.text} />
+          <XAxis dataKey="periodo" stroke={chartColors.text} />
           <YAxis stroke={chartColors.text} />
           <Tooltip contentStyle={chartColors.tooltip} />
-          <Bar 
-            dataKey="valor" 
-            fill="#F59E0B" 
-            name="Ventas" 
-            radius={[4, 4, 0, 0]} 
+          <Line
+            type="monotone"
+            dataKey="valor"
+            stroke="#10B981"
+            strokeWidth={3}
+            dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
+            name={data.datasets[0].label || "Valor"}
           />
-        </BarChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

@@ -1,4 +1,4 @@
-import { FaDashcube, FaTruck, FaUser, FaRoute, FaClipboardList, FaMapMarkedAlt, FaFileInvoiceDollar } from 'react-icons/fa';
+import { FaHome, FaTruck, FaUser, FaRoute, FaClipboardList, FaMapMarkedAlt, FaFileInvoiceDollar } from 'react-icons/fa';
 import NavItem from './NavItems';
 import PerfilMenu from './PerfilMenu';
 import { useTheme } from '../../context/ThemeContext';
@@ -23,7 +23,7 @@ function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile
       <div className="flex flex-col h-full">
         <div className="mt-12 md:mt-0 flex-1">
           <nav className="mt-5 px-2">
-            <NavItem icon={<FaDashcube />} text="Dashboard" path="/logged-in/dashboard" isCollapsed={isSidebarCollapsed && !isMobile} />
+            <NavItem icon={<FaHome />} text="Dashboard" path="/logged-in/dashboard" isCollapsed={isSidebarCollapsed && !isMobile} />
             <NavItem icon={<FaTruck />} text="Vehículos" path="/logged-in/vehiculos" isCollapsed={isSidebarCollapsed && !isMobile} />
             <NavItem icon={<FaUser />} text="Conductores" path="/logged-in/conductores" isCollapsed={isSidebarCollapsed && !isMobile} />
             <NavItem icon={<FaRoute />} text="Viajes" path="/logged-in/viajes" isCollapsed={isSidebarCollapsed && !isMobile} />
