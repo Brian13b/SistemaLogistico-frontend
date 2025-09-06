@@ -171,7 +171,7 @@ export default function Dashboard({ userRole }) {
           if (diffDias < 0 || diffDias > 30) return null;
           return {
             tipo: doc.tipo_documento,
-            fecha: fechaVenc.toLocaleDateString('es-AR'),
+            fecha: fechaVenc,
             descripcion: doc.archivo_nombre,
             entidad: tipoEntidad,
             vehiculo: doc.id_vehiculo,
@@ -183,7 +183,7 @@ export default function Dashboard({ userRole }) {
         }).filter(Boolean);
 
         const vencimientosUnificados = [
-          ...procesar(vehiculosRes.data, 'vehiculo'),
+          ...procesar(vehiculosRes.data, 'vehiculo'), 
           ...procesar(conductoresRes.data, 'conductor'),
           ...procesar(viajesRes.data, 'viaje')
         ];
@@ -207,10 +207,9 @@ export default function Dashboard({ userRole }) {
     }
   }, []);
 
-  const formatDate = (dateString) => {
+  const formatDate = (date) => {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', options);
+    return new Date(date).toLocaleDateString('es-AR', options);
   };
 
   const getActividadIcon = (actividad) => {
@@ -422,40 +421,17 @@ export default function Dashboard({ userRole }) {
             
             <div className="space-y-3">
               {vencimientos.slice(0, 5).map((vencimiento, index) => (
-                <div 
-                  key={index} 
-                  className={`p-3 rounded-lg border-l-4 ${
-                    vencimiento.critico 
-                      ? darkMode 
-                        ? 'bg-red-900 border-red-500' 
-                        : 'bg-red-50 border-red-500'
-                      : darkMode 
-                        ? 'bg-yellow-900 border-yellow-500' 
-                        : 'bg-yellow-50 border-yellow-500'
-                  }`}
-                >
+                <div key={index} className={`p-3 rounded-lg border-l-4 ${vencimiento.critico ? darkMode ? 'bg-red-900 border-red-500' : 'bg-red-50 border-red-500' : darkMode ? 'bg-yellow-900 border-yellow-500' : 'bg-yellow-50 border-yellow-500'}`}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className={`font-medium text-sm ${
-                        vencimiento.critico 
-                          ? darkMode ? 'text-red-200' : 'text-red-800'
-                          : darkMode ? 'text-yellow-200' : 'text-yellow-800'
-                      }`}>
+                      <p className={`font-medium text-sm ${vencimiento.critico ? darkMode ? 'text-red-200' : 'text-red-800': darkMode ? 'text-yellow-200' : 'text-yellow-800'}`}>
                         {vencimiento.tipo}
                       </p>
-                      <p className={`text-xs ${
-                        vencimiento.critico 
-                          ? darkMode ? 'text-red-300' : 'text-red-600'
-                          : darkMode ? 'text-yellow-300' : 'text-yellow-600'
-                      }`}>
+                      <p className={`text-xs ${vencimiento.critico ? darkMode ? 'text-red-300' : 'text-red-600': darkMode ? 'text-yellow-300' : 'text-yellow-600'}`}>
                         {vencimiento.descripcion}
                       </p>
                     </div>
-                    <span className={`text-xs font-medium ${
-                      vencimiento.critico 
-                        ? darkMode ? 'text-red-200' : 'text-red-800'
-                        : darkMode ? 'text-yellow-200' : 'text-yellow-800'
-                    }`}>
+                    <span className={`text-xs font-medium ${vencimiento.critico ? darkMode ? 'text-red-200' : 'text-red-800' : darkMode ? 'text-yellow-200' : 'text-yellow-800'}`}>
                       {formatDate(vencimiento.fecha)}
                     </span>
                   </div>
@@ -464,9 +440,7 @@ export default function Dashboard({ userRole }) {
             </div>
             
             {vencimientos.length > 5 && (
-              <button className={`mt-4 w-full text-sm py-2 rounded-lg ${
-                darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
-              }`}>
+              <button className={`mt-4 w-full text-sm py-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>
                 Ver todos ({vencimientos.length})
               </button>
             )}

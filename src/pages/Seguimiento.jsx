@@ -114,11 +114,7 @@ function Seguimiento() {
 
   if (loading) {
     return (
-      <div
-        className={`flex items-center justify-center h-full ${
-          darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'
-        }`}
-      >
+      <div className={`flex items-center justify-center h-full ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p>Cargando datos de seguimiento...</p>
@@ -128,25 +124,15 @@ function Seguimiento() {
   }
 
   return (
-    <div
-      className={`flex flex-col h-full p-2 space-y-2 ${
-        darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'
-      }`}
-    >
+    <div className={`flex flex-col h-full p-2 space-y-2 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}>
       <div className="flex flex-1 space-x-2 h-full w-full">
         {/* Mapa */}
-        <div
-          className={`flex-1 rounded-lg shadow border overflow-hidden ${
-            darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'
-          } h-full w-full`}
-        >
+        <div className={`flex-1 rounded-lg shadow border overflow-hidden ${ darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'} h-full w-full`}>
           <MapContainer
             center={[-32.055591, -60.60304]}
             zoom={16}
-            className="h-full w-full"
-            whenCreated={(map) => {
-              mapRef.current = map;
-            }}
+            className="h-full w-full z-0"
+            whenCreated={(map) => { mapRef.current = map; }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -167,28 +153,15 @@ function Seguimiento() {
                   key={ubicacion.id ?? ubicacion.vehiculoId}
                   position={[ubicacion.latitud, ubicacion.longitud]}
                   icon={crearIconoVehiculo(enMovimiento)}
-                  eventHandlers={{
-                    click: () => seleccionarVehiculo(ubicacion.vehiculoId),
-                  }}
+                  eventHandlers={{click: () => seleccionarVehiculo(ubicacion.vehiculoId)}}
                 >
                   <Tooltip>
                     <div className={`p-2 ${darkMode ? 'text-gray-800' : 'text-white'}`}>
                       <h3 className="font-bold text-lg mb-3">{ubicacion.patente}</h3>
-                      <div
-                        className={`text-sm ${darkMode ? 'text-gray-700' : 'text-gray-600'}`}
-                      >
-                        <p>
-                          Última actualización:{' '}
-                          {ubicacion.timestamp
-                            ? new Date(ubicacion.timestamp).toLocaleTimeString()
-                            : 'N/A'}
-                        </p>
-                        <p>
-                          Ubicación: {ubicacion.latitud}, {ubicacion.longitud}
-                        </p>
-                        <p>
-                          {ubicacion.marca} {ubicacion.modelo}
-                        </p>
+                      <div className={`text-sm ${darkMode ? 'text-gray-700' : 'text-gray-600'}`}>
+                        <p>Última actualización:{' '} {ubicacion.timestamp ? new Date(ubicacion.timestamp).toLocaleTimeString(): 'N/A'}</p>
+                        <p>Ubicación: {ubicacion.latitud}, {ubicacion.longitud}</p>
+                        <p>{ubicacion.marca} {ubicacion.modelo}</p>
                         <p>Velocidad: {ubicacion.velocidad} km/h</p>
                       </div>
                     </div>
@@ -200,13 +173,7 @@ function Seguimiento() {
         </div>
 
         {/* Lista de vehículos */}
-        <div
-          className={`w-80 rounded-lg shadow border overflow-y-auto ${
-            darkMode
-              ? 'bg-gray-800 text-white border-gray-700'
-              : 'bg-gray-100 text-gray-800 border-gray-300'
-          }`}
-        >
+        <div className={`w-80 rounded-lg shadow border overflow-y-auto ${darkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-gray-100 text-gray-800 border-gray-300'}`}>
           <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-400'}`}>
             <h2 className="text-lg font-bold">Flota de Vehículos</h2>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -222,29 +189,17 @@ function Seguimiento() {
               return (
                 <div
                   key={vehiculo.id}
-                  className={`p-4 cursor-pointer ${
-                    vehiculoSeleccionado === vehiculo.id
-                      ? 'bg-yellow-500 text-gray-800'
-                      : darkMode
-                      ? 'hover:bg-gray-700'
-                      : 'hover:bg-yellow-100'
-                  }`}
+                  className={`p-4 cursor-pointer ${vehiculoSeleccionado === vehiculo.id? 'bg-yellow-500 text-gray-800': darkMode ? 'hover:bg-gray-700': 'hover:bg-yellow-100'}`}
                   onClick={() => seleccionarVehiculo(vehiculo.id)}
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{vehiculo.patente}</p>
-                      <p
-                        className={`text-sm ${
-                          darkMode ? 'text-gray-400' : 'text-gray-600'
-                        }`}
-                      >
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         {vehiculo.marca} {vehiculo.modelo}
                       </p>
                     </div>
-                    <span
-                      className={`text-lg ${enMovimiento ? 'text-green-500' : 'text-yellow-500'}`}
-                    >
+                    <span className={`text-lg ${enMovimiento ? 'text-green-500' : 'text-yellow-500'}`}>
                       {enMovimiento ? '➤' : '🅿'}
                     </span>
                   </div>
@@ -253,10 +208,7 @@ function Seguimiento() {
                     <div className="mt-2 text-xs">
                       <p>Velocidad: {ubicacion.velocidad} km/h</p>
                       <p className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Actualizado:{' '}
-                        {ubicacion.timestamp
-                          ? new Date(ubicacion.timestamp).toLocaleTimeString()
-                          : 'N/A'}
+                        Actualizado:{' '} {ubicacion.timestamp ? new Date(ubicacion.timestamp).toLocaleTimeString() : 'N/A'}
                       </p>
                     </div>
                   )}
@@ -269,13 +221,7 @@ function Seguimiento() {
 
       {/* Detalles del vehículo */}
       {vehiculoSeleccionado && (
-        <div
-          className={`h-[30%] rounded-lg shadow border px-4 py-1 overflow-y-auto ${
-            darkMode
-              ? 'bg-gray-800 border-gray-700 text-white'
-              : 'bg-white border-gray-300 text-gray-800'
-          }`}
-        >
+        <div className={`h-[30%] rounded-lg shadow border px-4 py-1 overflow-y-auto ${ darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-800'}`}>
           {/* Detalles internos mantienen tu código original */}
           {(() => {
             const vehiculo = vehiculos.find((v) => v.id === vehiculoSeleccionado);
