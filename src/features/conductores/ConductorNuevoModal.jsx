@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { conductoresService } from '../../services/ConductoresService'; 
+import { createConductor, updateConductor } from '../../store/conductoresSlice';
 import Modal from '../../components/Modal'; 
 import { useNotification } from '../../context/NotificationContext';
 
 function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
+    const dispatch = useDispatch();
     const { showSuccess, showError, showWarning } = useNotification();
     const [conductor, setConductorData] = useState({
         codigo: '',
@@ -65,7 +68,7 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
 
             fetchConductorData();
         }
-    }, [isOpen, conductorId, showSuccess, showError]);
+    }, [isOpen, conductorId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -95,10 +98,10 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
         try {
             setLoading(true);
             if (conductorId) {
-                await conductoresService.update(conductorId, conductor);
+                await dispatch(updateConductor({ id: conductorId, conductorData: conductor })).unwrap();
                 showSuccess("Conductor actualizado correctamente");
             } else {
-                await conductoresService.create(conductor);
+                await dispatch(createConductor(conductor)).unwrap();
                 showSuccess("Conductor creado correctamente");
             }
             onClose();

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import Modal from '../../components/Modal';
 import { viajesService } from '../../services/ViajesService';
 import { conductoresService } from '../../services/ConductoresService';
 import { vehiculosService } from '../../services/VehiculosService';
+import { createViaje, updateViaje } from '../../store/viajesSlice';
 import { FaSave, FaTimes } from 'react-icons/fa';
 import { useNotification } from '../../context/NotificationContext';
 
 function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
+  const dispatch = useDispatch();
   const { showSuccess, showError, showWarning } = useNotification();
   const [viaje, setViaje] = useState({
     codigo: '',
@@ -56,7 +59,7 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
         resetForm();
       }
     }
-  }, [isOpen, viajeId, showError]);
+  }, [isOpen, viajeId]);
 
   const fetchViaje = async (id) => {
     try {
@@ -106,11 +109,11 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
     
     try {
       if (isEditing) {
-        await viajesService.update(viajeId, viaje);
+        await dispatch(updateViaje({ id: viajeId, viajeData: viaje })).unwrap();
         showSuccess("Viaje actualizado correctamente");
       } else {
         console.log("Guardando viaje:", viaje);
-        await viajesService.create(viaje);
+        await dispatch(createViaje(viaje)).unwrap();
         showSuccess("Viaje creado correctamente");
       }
       onClose(true);
@@ -127,7 +130,7 @@ function ViajeNuevoModal({ isOpen, onClose, viajeId, darkMode }) {
   return (
     <Modal 
       isOpen={isOpen} 
-      onClose={() => onClose(false)} 
+            onClose={onClose}
       title={isEditing ? "Editar Viaje" : "Nuevo Viaje"} 
       darkMode={darkMode}
     >

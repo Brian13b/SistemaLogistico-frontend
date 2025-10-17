@@ -18,7 +18,7 @@ export const userService = {
     }
   },
 
-  async updateUser(userData) {
+  async updateUser(username, userData) {
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.put(`${API_URL}/users/${username}`, userData, {

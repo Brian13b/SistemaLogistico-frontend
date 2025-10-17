@@ -1,13 +1,16 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import PersonalInfoModal from '../../features/auth/PersonalInfoModal';
 import UserConfigModal from '../../features/auth/UserConfigModal';
 import { userService } from '../../services/UserService';
+import { updateUser, deleteUser } from '../../store/usersSlice';
 import { useTheme } from '../../context/ThemeContext';
 import { useNotification } from '../../context/NotificationContext';
 
 export default function PerfilMenu({ onLogout, isSidebarCollapsed, user }) {
+  const dispatch = useDispatch();
   const { darkMode } = useTheme();
   const { showSuccess, showError, showInfo } = useNotification();
   const [isOpen, setIsOpen] = useState(false);
@@ -60,14 +63,9 @@ export default function PerfilMenu({ onLogout, isSidebarCollapsed, user }) {
 
   const handleEditUser = async (username, updatedUser) => {
     try {
-      const result = await userService.updateUser(username, updatedUser);
-      if (result) {
-        showSuccess('Usuario actualizado correctamente');
-        return true;
-      } else {
-        showError('No se pudo actualizar el usuario');
-        return false;
-      }
+      await dispatch(updateUser({ username, userData: updatedUser })).unwrap();
+      showSuccess('Usuario actualizado correctamente');
+      return true;
     } catch (error) {
       showError('Error al actualizar usuario');
       return false;
@@ -76,7 +74,7 @@ export default function PerfilMenu({ onLogout, isSidebarCollapsed, user }) {
 
   const handleDeleteUser = async (username) => {
     try {
-      await userService.deleteUser(username);
+      await dispatch(deleteUser(username)).unwrap();
       showSuccess('Usuario eliminado correctamente');
     } catch (error) {
       showError('Error al eliminar usuario');

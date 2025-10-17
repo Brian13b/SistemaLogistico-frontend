@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { vehiculosService } from '../../services/VehiculosService';
+import { createVehiculo, updateVehiculo } from '../../store/vehiculosSlice';
 import Modal from '../../components/Modal';
 import { useNotification } from '../../context/NotificationContext';
 
 function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
+    const dispatch = useDispatch();
     const { showSuccess, showError, showWarning } = useNotification();
     const [vehiculo, setVehiculo] = useState({
         marca: '', 
@@ -66,7 +69,7 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
             };
             fetchVehiculoData();
         }
-    }, [isOpen, vehiculoId, showSuccess, showError]);
+    }, [isOpen, vehiculoId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -89,10 +92,10 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
         try {
             setLoading(true);
             if(vehiculoId) {
-                await vehiculosService.update(vehiculoId, vehiculo);
+                await dispatch(updateVehiculo({ id: vehiculoId, vehiculoData: vehiculo })).unwrap();
                 showSuccess("Vehículo actualizado correctamente");
             } else {
-                await vehiculosService.create(vehiculo);
+                await dispatch(createVehiculo(vehiculo)).unwrap();
                 showSuccess("Vehículo creado correctamente");
             }
             setError(null);
@@ -110,7 +113,7 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
     return (
         <Modal 
             isOpen={isOpen} 
-            onClose={() => onClose(false)} 
+            onClose={onClose} 
             title={vehiculoId ? "Editar Vehículo" : "Nuevo Vehículo"} 
             darkMode={darkMode}
         >
