@@ -1,22 +1,42 @@
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import FacturaFormModal from '../features/facturacion/FacturaFormModal';
+import { facturacionService } from '../services/FacturacionService';
 
 export default function Facturacion() {
   const { darkMode } = useTheme();
   const { showSuccess, showError, showWarning, showInfo } = useNotification();
   const [loading, setLoading] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [facturas, setFacturas] = useState([]);
+  const [loadingFacturas, setLoadingFacturas] = useState(false);
 
-  const handleGenerarFactura = async () => {
-    setLoading(true);
+  useEffect(() => {
+    cargarFacturas();
+  }, []);
+
+  const cargarFacturas = async () => {
+    setLoadingFacturas(true);
     try {
-      // Simular generación de factura
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      showSuccess('Factura generada correctamente');
+      const response = await facturacionService.listarFacturas({ limit: 20 });
+      setFacturas(response.data || []);
     } catch (error) {
-      showError('Error al generar la factura');
+      console.error('Error al cargar facturas:', error);
+      // No mostrar error si el servicio no está disponible
     } finally {
-      setLoading(false);
+      setLoadingFacturas(false);
+    }
+  };
+
+  const handleGenerarFactura = () => {
+    setShowFormModal(true);
+  };
+
+  const handleCloseModal = (facturaEmitida) => {
+    setShowFormModal(false);
+    if (facturaEmitida) {
+      cargarFacturas(); // Recargar lista de facturas
     }
   };
 
@@ -30,6 +50,16 @@ export default function Facturacion() {
     }
   };
 
+  const formatearFecha = (fecha) => {
+    if (!fecha) return '';
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-AR');
+  };
+
+  const formatearNumeroFactura = (tipo, puntoVta, numero) => {
+    return `${String(puntoVta).padStart(4, '0')}-${String(numero).padStart(8, '0')}`;
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -37,12 +67,12 @@ export default function Facturacion() {
           Facturación
         </h1>
         <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mt-1`}>
-          Gestión de facturas y documentos comerciales
+          Gestión de facturas electrónicas integradas con AFIP/ARCA
         </p>
       </div>
 
       <div className={`p-6 rounded-lg border-0 shadow-sm ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
             <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               Generar Factura
@@ -89,19 +119,103 @@ export default function Facturacion() {
               Historial
             </h3>
             <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Ver historial de facturas generadas
+              {facturas.length} factura(s) registrada(s)
             </p>
             <button
-              onClick={() => showInfo('Funcionalidad en desarrollo')}
+              onClick={cargarFacturas}
               className={`w-full px-4 py-2 rounded ${
                 darkMode
                   ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                   : 'bg-yellow-500 hover:bg-yellow-600 text-white'
               }`}
             >
-              Ver Historial
+              Actualizar Lista
             </button>
           </div>
+        </div>
+
+        {/* Historial de facturas */}
+        <div className="mt-8">
+          <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            Historial de Facturas
+          </h2>
+          {loadingFacturas ? (
+            <div className="text-center py-8">
+              <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Cargando facturas...</p>
+            </div>
+          ) : facturas.length === 0 ? (
+            <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
+              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                No hay facturas registradas aún. Genera tu primera factura haciendo clic en "Generar Factura".
+              </p>
+            </div>
+          ) : (
+            <div className={`overflow-x-auto rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <table className="w-full">
+                <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-100'}>
+                  <tr>
+                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Número
+                    </th>
+                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Fecha
+                    </th>
+                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Cliente
+                    </th>
+                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Importe
+                    </th>
+                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      CAE
+                    </th>
+                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Estado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {facturas.map((factura) => (
+                    <tr
+                      key={factura.id}
+                      className={`border-t ${darkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`}
+                    >
+                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {formatearNumeroFactura(factura.tipo_cbte, factura.punto_vta, factura.numero)}
+                      </td>
+                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {formatearFecha(factura.fecha_cbte)}
+                      </td>
+                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {factura.nro_doc}
+                      </td>
+                      <td className={`px-4 py-3 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        ${factura.imp_total.toFixed(2)}
+                      </td>
+                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {factura.cae}
+                      </td>
+                      <td className={`px-4 py-3 text-sm`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            factura.estado === 'A'
+                              ? darkMode
+                                ? 'bg-green-800 text-green-200'
+                                : 'bg-green-100 text-green-800'
+                              : darkMode
+                                ? 'bg-red-800 text-red-200'
+                                : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {factura.estado === 'A' ? 'Aprobada' : 'Rechazada'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <div className="mt-8">
@@ -109,13 +223,24 @@ export default function Facturacion() {
             Información de Facturación
           </h2>
           <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
-            <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              El sistema de facturación está integrado con AFIP para generar facturas electrónicas válidas.
+            <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>
+              El sistema de facturación está integrado con AFIP/ARCA para generar facturas electrónicas válidas.
               Todas las facturas se almacenan automáticamente y pueden ser consultadas en cualquier momento.
+            </p>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <strong>Modo:</strong> Homologación (facturas ficticias para pruebas)
             </p>
           </div>
         </div>
       </div>
+
+      {/* Modal de formulario */}
+      {showFormModal && (
+        <FacturaFormModal
+          isOpen={showFormModal}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
