@@ -1,3 +1,4 @@
+/*
 import api from './api';
 import axios from 'axios';
 
@@ -17,4 +18,27 @@ export const trackerService = {
 
     obtenerDispositivos: () => api.get('/v1/dispositivos'),
     obtenerDispositivoPorId: (dispositivoId) => api.get(`/v1/dispositivos/${dispositivoId}`),
+};*/
+
+import api from './api'; 
+
+export const trackerService = {
+    obtenerUbicacionActual: (dispositivoId) => 
+        api.get(`/tracker/dispositivo/${dispositivoId}/actual`),
+
+    obtenerHistorialUbicaciones: (dispositivoId, fechaInicio, fechaFin) => 
+        api.get(`/tracker/dispositivo/${dispositivoId}/historial`, {
+            params: {
+                fechaInicio,
+                fechaFin
+            }
+        }),
+
+    obtenerVehiculos: () => api.get('/tracker/vehiculos'),
+    
+    obtenerVehiculoPorId: (vehiculoId) => api.get(`/tracker/vehiculos/${vehiculoId}`),
+
+    obtenerDispositivos: () => api.get('/tracker/dispositivos'),
+    
+    obtenerDispositivoPorId: (dispositivoId) => api.get(`/tracker/dispositivos/${dispositivoId}`),
 };
