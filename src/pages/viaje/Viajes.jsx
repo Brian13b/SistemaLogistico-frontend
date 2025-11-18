@@ -49,28 +49,28 @@ function Viajes() {
     estado: ''
   }, 5);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [viajesRes, conductoresRes, vehiculosRes] = await Promise.all([
-          viajesService.getAll(),
-          conductoresService.getAll(),
-          vehiculosService.getAll()
-        ]);
-        
-        setViajes(viajesRes.data);
-        setConductores(conductoresRes.data);
-        setVehiculos(vehiculosRes.data);
-        setError(null);
-      } catch (err) {
-        setError("Error al cargar los datos");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [viajesRes, conductoresRes, vehiculosRes] = await Promise.all([
+        viajesService.getAll(),
+        conductoresService.getAll(),
+        vehiculosService.getAll()
+      ]);
+      
+      setViajes(viajesRes.data);
+      setConductores(conductoresRes.data);
+      setVehiculos(vehiculosRes.data);
+      setError(null);
+    } catch (err) {
+      setError("Error al cargar los datos");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
