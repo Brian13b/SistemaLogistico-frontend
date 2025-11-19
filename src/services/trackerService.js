@@ -24,10 +24,10 @@ import api from './api';
 
 export const trackerService = {
     obtenerUbicacionActual: (dispositivoId) => 
-        api.get(`/tracker/dispositivo/${dispositivoId}/actual`),
+        api.get(`/tracker/tracker/dispositivo/${dispositivoId}/actual`),
 
     obtenerHistorialUbicaciones: (dispositivoId, fechaInicio, fechaFin) => 
-        api.get(`/tracker/dispositivo/${dispositivoId}/historial`, {
+        api.get(`/tracker/tracker/dispositivo/${dispositivoId}/historial`, {
             params: {
                 fechaInicio,
                 fechaFin
@@ -38,7 +38,7 @@ export const trackerService = {
     
     obtenerVehiculoPorId: (vehiculoId) => api.get(`/tracker/vehiculos/${vehiculoId}`),
 
-    obtenerDispositivos: () => api.get('/tracker/dispositivos'),
+    obtenerDispositivos: () => api.get('/dispositivos'),
     
     obtenerDispositivoPorId: (dispositivoId) => api.get(`/tracker/dispositivos/${dispositivoId}`),
 };
