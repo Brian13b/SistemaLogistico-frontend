@@ -14,7 +14,10 @@ function LoginPage() {
         console.log("⏰ Intentando despertar al Gateway y Backends...");
         //await api.get('/health'); 
         await fetch('https://logistico-gateway.onrender.com/docs'); 
-        await fetch('https://logistico-backend.onrender.com/docs'); 
+        await fetch('https://logistico-backend.onrender.com/docs');
+        await fetch('https://sistemalogistico-tracking.onrender.com/api/docs');
+        await fetch('https://logistico-facturacion.onrender.com/docs');
+        console.log("✅ Servidores despiertos y listos para usarse.");
       } catch (error) {
         console.log("El servidor se está despertando...", error);
       }
