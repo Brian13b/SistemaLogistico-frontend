@@ -6,6 +6,21 @@ import { useTheme } from '../../context/ThemeContext';
 function LoginPage() {
   const { darkMode, toggleDarkMode } = useTheme();
 
+  // DESPERTADOR DE SERVIDORES
+  useEffect(() => {
+    const despertarServidores = async () => {
+      try {
+        console.log("⏰ Intentando despertar al Gateway y Backends...");
+        //await api.get('/health'); 
+        await api.get('/vehiculos'); 
+      } catch (error) {
+        console.log("El servidor se está despertando...", error);
+      }
+    };
+
+    despertarServidores();
+  }, []);
+
   return (
     <div className="flex min-h-screen">
       {/* Background image */}
