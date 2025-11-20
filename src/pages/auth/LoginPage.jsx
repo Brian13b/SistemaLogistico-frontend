@@ -13,7 +13,8 @@ function LoginPage() {
       try {
         console.log("⏰ Intentando despertar al Gateway y Backends...");
         //await api.get('/health'); 
-        await api.get('/vehiculos'); 
+        await fetch('https://logistico-gateway.onrender.com/docs'); 
+        await fetch('https://logistico-backend.onrender.com/docs'); 
       } catch (error) {
         console.log("El servidor se está despertando...", error);
       }
