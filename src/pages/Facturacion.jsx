@@ -60,6 +60,17 @@ export default function Facturacion() {
     }
   };
 
+  const handleVerificarSync = async () => {
+    try {
+        const response = await facturacionService.obtenerUltimoComprobante(1, 1);
+        const ultimoAfip = response.data.ultimo_numero;
+        
+        showInfo(`Sincronizado: El último comprobante en AFIP es el N° ${ultimoAfip}`);
+    } catch (error) {
+        showError("Error al consultar AFIP");
+    }
+  };
+
   const formatearFecha = (fecha) => {
     if (!fecha) return '';
     const date = new Date(fecha);
@@ -140,6 +151,25 @@ export default function Facturacion() {
               }`}
             >
               Actualizar Lista
+            </button>
+          </div>
+
+          <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
+            <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Verificar conexión AFIP/ARCA
+            </h3>
+            <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Verifica el estado de la conexión con AFIP/ARCA
+            </p>
+            <button
+              onClick={handleVerificarSync}
+              className={`w-full px-4 py-2 rounded ${
+                darkMode
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white'
+              }`}
+            >
+              Verificar Conexión
             </button>
           </div>
         </div>
