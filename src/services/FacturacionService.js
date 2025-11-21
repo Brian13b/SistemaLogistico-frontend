@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// Cliente axios específico para el servicio de facturación
-const FACTURACION_API_URL = import.meta.env.VITE_FACTURACION_API_URL || 
-  (import.meta.env.DEV ? 'http://localhost:8003/api/facturas' : '/api/facturas');
+const GATEWAY_URL = "https://logistico-gateway.onrender.com";
+const FACTURACION_API_URL = import.meta.env.VITE_FACTURACION_API_URL || (import.meta.env.DEV ? 'http://localhost:8003/api/facturas' : `${GATEWAY_URL}/facturas`);
 
 const facturacionApi = axios.create({
   baseURL: FACTURACION_API_URL,
