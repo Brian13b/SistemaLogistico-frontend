@@ -48,8 +48,35 @@ export const facturacionService = {
   obtenerTiposDocumento: () => facturacionApi.get('/parametros/tipos-documento'),
   obtenerTiposIVA: () => facturacionApi.get('/parametros/tipos-iva'),
   obtenerTiposConcepto: () => facturacionApi.get('/parametros/tipos-concepto'),
+  obtenerCondicionesIvaReceptor: () => facturacionApi.get('/parametros/condiciones-iva-receptor'),
   
   // Estado de servidores
   estadoServidores: () => facturacionApi.get('/estado/servidores'),
+
+  descargarFactura: async (id, numero) => {
+        try {
+            const response = await facturacionApi.get(`/facturas/${id}/pdf`, {
+                responseType: 'blob' // ¡CRUCIAL! Indica que esperamos un archivo
+            });
+            
+            // Crear un link temporal para descargar el archivo
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            // Nombre del archivo sugerido
+            link.setAttribute('download', `Factura-${numero}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            
+            // Limpiar
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            return true;
+        } catch (error) {
+            console.error("Error al descargar PDF", error);
+            throw error;
+        }
+    },
 };
 

@@ -3,6 +3,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useState, useEffect } from 'react';
 import FacturaFormModal from '../features/facturacion/FacturaFormModal';
 import { facturacionService } from '../services/FacturacionService';
+import { FaFilePdf } from 'react-icons/fa';
 
 export default function Facturacion() {
   const { darkMode } = useTheme();
@@ -42,11 +43,20 @@ export default function Facturacion() {
 
   const handleEnviarFactura = async () => {
     try {
-      // Simular envío de factura
       await new Promise(resolve => setTimeout(resolve, 1000));
       showSuccess('Factura enviada por email correctamente');
     } catch (error) {
       showError('Error al enviar la factura');
+    }
+  };
+
+  const handleDescargarPdf = async (factura) => {
+    try {
+        // Mostramos un toast o spinner si quieres
+        await facturacionService.descargarFactura(factura.id, factura.numero);
+        showSuccess('Factura descargada correctamente');
+    } catch (error) {
+        showError('Error al descargar la factura');
     }
   };
 
@@ -172,6 +182,9 @@ export default function Facturacion() {
                     <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       Estado
                     </th>
+                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -209,6 +222,17 @@ export default function Facturacion() {
                         >
                           {factura.estado === 'A' ? 'Aprobada' : 'Rechazada'}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {factura.estado === 'A' && (
+                          <button
+                            onClick={() => handleDescargarPdf(factura)}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                            title="Descargar PDF"
+                          >
+                            <FaFilePdf size={20} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

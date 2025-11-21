@@ -8,6 +8,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
   const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(false);
   const [loadingParams, setLoadingParams] = useState(true);
+  
   const [formData, setFormData] = useState({
     viaje_id: viajeId,
     sales_point: 1,
@@ -15,6 +16,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     concept: 2, // 2: Servicios (por defecto para viajes)
     doc_type: 80, // 80: CUIT
     doc_number: '',
+    condicion_iva_receptor_id: 1, // 1: Resp. Inscripto (Default)
     total_amount: viajeData?.precio || 0,
     net_amount: 0,
     vat_amount: 0,
@@ -34,14 +36,14 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     tiposDocumento: [],
     tiposIVA: [],
     tiposConcepto: [],
+    condicionesIVA: [], // Nuevo estado para ARCA
   });
 
   useEffect(() => {
     if (isOpen) {
       cargarParametros();
-      // Calcular importes iniciales si hay precio del viaje
       if (viajeData?.precio) {
-        calcularImportes(viajeData.precio);
+        calcularImportes(viajeData.precio, formData.voucher_type);
       }
     }
   }, [isOpen]);
@@ -49,18 +51,22 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
   const cargarParametros = async () => {
     setLoadingParams(true);
     try {
+      // Cargar todos los parámetros en paralelo
       const [
         tiposComprobante,
         puntosVenta,
         tiposDocumento,
         tiposIVA,
         tiposConcepto,
+        condicionesIVA
       ] = await Promise.all([
         facturacionService.obtenerTiposComprobante(),
         facturacionService.obtenerPuntosVenta(),
         facturacionService.obtenerTiposDocumento(),
         facturacionService.obtenerTiposIVA(),
         facturacionService.obtenerTiposConcepto(),
+        // Si este método falla (porque el backend es viejo), usamos array vacío para no romper todo
+        facturacionService.obtenerCondicionesIvaReceptor().catch(() => ({ data: [] }))
       ]);
 
       setParametros({
@@ -69,6 +75,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
         tiposDocumento: tiposDocumento.data || [],
         tiposIVA: tiposIVA.data || [],
         tiposConcepto: tiposConcepto.data || [],
+        condicionesIVA: condicionesIVA.data || []
       });
     } catch (error) {
       console.error('Error al cargar parámetros:', error);
@@ -78,36 +85,61 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     }
   };
 
-  const calcularImportes = (total) => {
-    // Para factura tipo A (con IVA discriminado)
-    if (formData.voucher_type === 1) {
-      const neto = total / 1.21;
-      const iva = total - neto;
+  const calcularImportes = (total, tipoComprobante) => {
+    const totalNum = parseFloat(total) || 0;
+    
+    // Para factura tipo A (con IVA discriminado - ID 1)
+    // Nota: Usamos ID 1 hardcodeado para A, idealmente debería chequearse contra parametros
+    if (parseInt(tipoComprobante) === 1) {
+      // Calculamos neto dividiendo por 1.21
+      const neto = totalNum / 1.21;
+      // Redondeamos a 2 decimales
+      const netoRedondeado = Math.round(neto * 100) / 100;
+      // El IVA es la diferencia exacta para que sume el total
+      const iva = totalNum - netoRedondeado;
+      
       setFormData(prev => ({
         ...prev,
-        total_amount: total,
-        net_amount: Math.round(neto * 100) / 100,
+        total_amount: totalNum,
+        net_amount: netoRedondeado,
         vat_amount: Math.round(iva * 100) / 100,
       }));
     } else {
-      // Para factura tipo B (IVA incluido)
+      // Para factura tipo B (IVA incluido) o C
       setFormData(prev => ({
         ...prev,
-        total_amount: total,
-        net_amount: total / 1.21,
-        vat_amount: total - (total / 1.21),
+        total_amount: totalNum,
+        net_amount: totalNum, // En B/C el total va al neto para efectos de este form simple
+        vat_amount: 0,
       }));
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
     setFormData(prev => {
-      const newData = { ...prev, [name]: name.includes('amount') ? parseFloat(value) || 0 : value };
+      // Convertir a número si es un campo de importe o ID
+      const isNumber = ['total_amount', 'sales_point', 'voucher_type', 'concept', 'doc_type', 'condicion_iva_receptor_id'].includes(name);
+      const finalValue = isNumber ? (parseFloat(value) || 0) : value;
       
-      // Si cambia el total, recalcular importes
-      if (name === 'total_amount' || name === 'voucher_type') {
-        calcularImportes(newData.total_amount);
+      const newData = { ...prev, [name]: finalValue };
+      
+      // Si cambia el total o el tipo, recalcular
+      if (name === 'total_amount') {
+        calcularImportes(finalValue, prev.voucher_type);
+      }
+      if (name === 'voucher_type') {
+        calcularImportes(prev.total_amount, finalValue);
+        
+        // Autocompletar sugerencias según tipo
+        if (parseInt(finalValue) === 1) { // Factura A
+            newData.doc_type = 80; // CUIT
+            newData.condicion_iva_receptor_id = 1; // Resp Inscripto
+        } else if (parseInt(finalValue) === 6 || parseInt(finalValue) === 11) { // B o C
+            newData.doc_type = 80; // Por defecto CUIT (o DNI)
+            newData.condicion_iva_receptor_id = 5; // Consumidor Final
+        }
       }
       
       return newData;
@@ -119,27 +151,54 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     setLoading(true);
 
     try {
-      // Preparar datos para enviar
+      // Validaciones básicas
+      if (!formData.doc_number) {
+          showError("Debe ingresar un número de documento");
+          setLoading(false);
+          return;
+      }
+
+      // Preparar datos para enviar con los tipos correctos (int/float)
       const facturaData = {
-        ...formData,
-        // Agregar detalles de IVA si es factura tipo A
-        vat_details: formData.voucher_type === 1 && formData.vat_amount > 0 ? [
-          {
-            id: 5, // 21% por defecto
-            base_imp: formData.net_amount,
-            importe: formData.vat_amount,
-          }
-        ] : null,
-        // Formatear fechas si están en formato diferente
+        viaje_id: formData.viaje_id,
+        sales_point: parseInt(formData.sales_point),
+        voucher_type: parseInt(formData.voucher_type),
+        concept: parseInt(formData.concept),
+        doc_type: parseInt(formData.doc_type),
+        doc_number: formData.doc_number.toString(),
+        condicion_iva_receptor_id: parseInt(formData.condicion_iva_receptor_id),
+        
+        total_amount: parseFloat(formData.total_amount),
+        net_amount: parseFloat(formData.net_amount),
+        vat_amount: parseFloat(formData.vat_amount),
+        non_taxable_amount: 0,
+        exempt_amount: 0,
+        tributes_amount: 0,
+        
+        currency: 'PES',
+        currency_rate: 1.0,
+        
+        // Fechas formateadas
         service_start_date: formatearFecha(formData.service_start_date),
         service_end_date: formatearFecha(formData.service_end_date),
         payment_due_date: formatearFecha(formData.payment_due_date) || formatearFecha(new Date()),
+        
+        // Agregar detalles de IVA solo si es Factura A y hay monto
+        vat_details: (parseInt(formData.voucher_type) === 1 && formData.vat_amount > 0) ? [
+          {
+            id: 5, // ID 5 es 21%
+            base_imp: parseFloat(formData.net_amount),
+            importe: parseFloat(formData.vat_amount),
+          }
+        ] : null,
+        
+        tributes_details: []
       };
 
       const response = await facturacionService.emitirFactura(facturaData);
       
       showSuccess(`Factura ${response.data.numero} emitida exitosamente. CAE: ${response.data.cae}`);
-      onClose(true); // Pasar true para indicar que se emitió una factura
+      onClose(true);
     } catch (error) {
       console.error('Error al emitir factura:', error);
       const errorMessage = error.response?.data?.detail || 'Error al emitir la factura';
@@ -151,13 +210,8 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
 
   const formatearFecha = (fecha) => {
     if (!fecha) return null;
+    if (typeof fecha === 'string' && fecha.length === 8 && /^\d+$/.test(fecha)) return fecha;
     
-    // Si ya está en formato AAAAMMDD
-    if (typeof fecha === 'string' && fecha.length === 8 && /^\d+$/.test(fecha)) {
-      return fecha;
-    }
-    
-    // Si es una fecha ISO o similar
     const date = new Date(fecha);
     if (!isNaN(date.getTime())) {
       const year = date.getFullYear();
@@ -165,7 +219,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}${month}${day}`;
     }
-    
     return fecha;
   };
 
@@ -180,7 +233,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
               Emitir Factura {viajeId && `(Viaje #${viajeId})`}
             </h2>
             <button
-              onClick={onClose}
+              onClick={() => onClose(false)}
               className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} text-2xl`}
             >
               ×
@@ -195,7 +248,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
             </div>
           ) : (
             <>
-              {/* Información del comprobante */}
+              {/* --- FILA 1: Comprobante y Punto de Venta --- */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -205,17 +258,11 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                     name="voucher_type"
                     value={formData.voucher_type}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                     required
                   >
                     {parametros.tiposComprobante.map((tipo) => (
-                      <option key={tipo.codigo} value={tipo.codigo}>
-                        {tipo.descripcion}
-                      </option>
+                      <option key={tipo.codigo} value={tipo.codigo}>{tipo.descripcion}</option>
                     ))}
                   </select>
                 </div>
@@ -228,17 +275,11 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                     name="sales_point"
                     value={formData.sales_point}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                     required
                   >
                     {parametros.puntosVenta.map((pv) => (
-                      <option key={pv.codigo} value={pv.codigo}>
-                        {pv.descripcion}
-                      </option>
+                      <option key={pv.codigo} value={pv.codigo}>{pv.descripcion}</option>
                     ))}
                   </select>
                 </div>
@@ -251,72 +292,81 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                     name="concept"
                     value={formData.concept}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                     required
                   >
-                    {parametros.tiposConcepto.map((concepto) => (
-                      <option key={concepto.codigo} value={concepto.codigo}>
-                        {concepto.descripcion}
-                      </option>
+                    {parametros.tiposConcepto.map((c) => (
+                      <option key={c.codigo} value={c.codigo}>{c.descripcion}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* Información del cliente */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* --- FILA 2: Cliente --- */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Tipo de Documento *
+                    Tipo Documento *
                   </label>
                   <select
                     name="doc_type"
                     value={formData.doc_type}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                     required
                   >
-                    {parametros.tiposDocumento.map((tipo) => (
-                      <option key={tipo.codigo} value={tipo.codigo}>
-                        {tipo.descripcion}
-                      </option>
+                    {parametros.tiposDocumento.map((t) => (
+                      <option key={t.codigo} value={t.codigo}>{t.descripcion}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Número de Documento *
+                    Número Documento *
                   </label>
                   <input
                     type="text"
                     name="doc_number"
                     value={formData.doc_number}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                    placeholder="12345678901"
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                    placeholder="CUIT/DNI sin guiones"
                     required
                   />
                 </div>
-              </div>
 
-              {/* Importes */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Importe Total *
+                    Condición IVA (Receptor) *
+                  </label>
+                  <select
+                    name="condicion_iva_receptor_id"
+                    value={formData.condicion_iva_receptor_id}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                    required
+                  >
+                    {parametros.condicionesIVA.length > 0 ? (
+                        parametros.condicionesIVA.map((c) => (
+                        <option key={c.codigo} value={c.codigo}>{c.descripcion}</option>
+                        ))
+                    ) : (
+                        <>
+                            <option value={1}>IVA Responsable Inscripto</option>
+                            <option value={5}>Consumidor Final</option>
+                            <option value={6}>Responsable Monotributo</option>
+                        </>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              {/* --- FILA 3: Importes --- */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded bg-opacity-10 bg-blue-500">
+                <div>
+                  <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    IMPORTE TOTAL *
                   </label>
                   <input
                     type="number"
@@ -325,51 +375,37 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                     onChange={handleChange}
                     step="0.01"
                     min="0"
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border font-bold text-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                     required
                   />
                 </div>
 
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Importe Neto
+                    Neto Gravado (Calc)
                   </label>
                   <input
                     type="number"
-                    name="net_amount"
-                    value={formData.net_amount.toFixed(2)}
+                    value={formData.net_amount}
                     readOnly
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-600 border-gray-600 text-gray-400'
-                        : 'bg-gray-100 border-gray-300 text-gray-600'
-                    }`}
+                    className="w-full px-3 py-2 rounded border bg-gray-100 text-gray-600 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    IVA
+                    IVA (21%)
                   </label>
                   <input
                     type="number"
-                    name="vat_amount"
-                    value={formData.vat_amount.toFixed(2)}
+                    value={formData.vat_amount}
                     readOnly
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-600 border-gray-600 text-gray-400'
-                        : 'bg-gray-100 border-gray-300 text-gray-600'
-                    }`}
+                    className="w-full px-3 py-2 rounded border bg-gray-100 text-gray-600 cursor-not-allowed"
                   />
                 </div>
               </div>
 
-              {/* Fechas */}
+              {/* --- FILA 4: Fechas --- */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -380,14 +416,9 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                     name="service_start_date"
                     value={formData.service_start_date}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   />
                 </div>
-
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Fecha Fin Servicio
@@ -397,28 +428,19 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                     name="service_end_date"
                     value={formData.service_end_date}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   />
                 </div>
-
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Fecha Vencimiento Pago
+                    Vto. Pago
                   </label>
                   <input
                     type="date"
                     name="payment_due_date"
                     value={formData.payment_due_date}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   />
                 </div>
               </div>
@@ -427,27 +449,17 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
               <div className="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className={`px-6 py-2 rounded ${
-                    darkMode
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                  }`}
+                  onClick={() => onClose(false)}
+                  className={`px-6 py-2 rounded ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`px-6 py-2 rounded ${
-                    loading
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : darkMode
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                        : 'bg-blue-500 hover:bg-blue-600 text-white'
-                  }`}
+                  className={`px-6 py-2 rounded ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 >
-                  {loading ? 'Emitiendo...' : 'Emitir Factura'}
+                  {loading ? 'Procesando en AFIP...' : 'Emitir Factura'}
                 </button>
               </div>
             </>
@@ -457,4 +469,3 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     </div>
   );
 }
-
