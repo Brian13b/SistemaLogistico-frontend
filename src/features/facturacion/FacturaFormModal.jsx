@@ -9,22 +9,39 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
   const [loading, setLoading] = useState(false);
   const [loadingParams, setLoadingParams] = useState(true);
   
+  // Estados para el cálculo de ítems (Tu nuevo requerimiento)
+  const [calculadora, setCalculadora] = useState({
+    cantidad: 1,
+    precioUnitario: viajeData?.precio || 0,
+    unidad: 'Unidad', // Solo visual/interno por ahora
+    alicuotaIVA: 21 // Por defecto 21%
+  });
+
+  // Estado del formulario principal (Estructura AFIP)
   const [formData, setFormData] = useState({
     viaje_id: viajeId,
     sales_point: 1,
     voucher_type: 1, // 1: Factura A, 6: Factura B
-    concept: 2, // 2: Servicios (por defecto para viajes)
+    concept: 2, // 2: Servicios
     doc_type: 80, // 80: CUIT
     doc_number: '',
-    condicion_iva_receptor_id: 1, // 1: Resp. Inscripto (Default)
-    total_amount: viajeData?.precio || 0,
+    condicion_iva_receptor_id: 1,
+    can_mis_mon_ext: 'N',
+    
+    // Estos se calcularán automáticamente
+    total_amount: 0,
     net_amount: 0,
     vat_amount: 0,
+    
+    // Campos opcionales inicializados en 0
     non_taxable_amount: 0,
     exempt_amount: 0,
     tributes_amount: 0,
+    
     currency: 'PES',
     currency_rate: 1.0,
+    
+    // Fechas
     service_start_date: viajeData?.fecha_salida || '',
     service_end_date: viajeData?.fecha_llegada || '',
     payment_due_date: '',
@@ -34,38 +51,33 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     tiposComprobante: [],
     puntosVenta: [],
     tiposDocumento: [],
-    tiposIVA: [],
+    tiposIVA: [], // Para llenar el select de alícuotas
     tiposConcepto: [],
-    condicionesIVA: [], // Nuevo estado para ARCA
+    condicionesIVA: [],
   });
 
   useEffect(() => {
     if (isOpen) {
       cargarParametros();
-      if (viajeData?.precio) {
-        calcularImportes(viajeData.precio, formData.voucher_type);
-      }
     }
   }, [isOpen]);
+
+  // Efecto para recalcular cuando cambian los inputs de la calculadora o el tipo de comprobante
+  useEffect(() => {
+    recalcularTotales();
+  }, [calculadora, formData.voucher_type, formData.tributes_amount, formData.exempt_amount]);
 
   const cargarParametros = async () => {
     setLoadingParams(true);
     try {
-      // Cargar todos los parámetros en paralelo
       const [
-        tiposComprobante,
-        puntosVenta,
-        tiposDocumento,
-        tiposIVA,
-        tiposConcepto,
-        condicionesIVA
+        tiposComprobante, puntosVenta, tiposDocumento, tiposIVA, tiposConcepto, condicionesIVA
       ] = await Promise.all([
         facturacionService.obtenerTiposComprobante(),
         facturacionService.obtenerPuntosVenta(),
         facturacionService.obtenerTiposDocumento(),
         facturacionService.obtenerTiposIVA(),
         facturacionService.obtenerTiposConcepto(),
-        // Si este método falla (porque el backend es viejo), usamos array vacío para no romper todo
         facturacionService.obtenerCondicionesIvaReceptor().catch(() => ({ data: [] }))
       ]);
 
@@ -85,64 +97,66 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     }
   };
 
-  const calcularImportes = (total, tipoComprobante) => {
-    const totalNum = parseFloat(total) || 0;
-    
-    // Para factura tipo A (con IVA discriminado - ID 1)
-    // Nota: Usamos ID 1 hardcodeado para A, idealmente debería chequearse contra parametros
-    if (parseInt(tipoComprobante) === 1) {
-      // Calculamos neto dividiendo por 1.21
-      const neto = totalNum / 1.21;
-      // Redondeamos a 2 decimales
-      const netoRedondeado = Math.round(neto * 100) / 100;
-      // El IVA es la diferencia exacta para que sume el total
-      const iva = totalNum - netoRedondeado;
-      
-      setFormData(prev => ({
-        ...prev,
-        total_amount: totalNum,
-        net_amount: netoRedondeado,
-        vat_amount: Math.round(iva * 100) / 100,
-      }));
+  const recalcularTotales = () => {
+    const cant = parseFloat(calculadora.cantidad) || 0;
+    const precio = parseFloat(calculadora.precioUnitario) || 0;
+    const netoCalculado = cant * precio;
+
+    // Lógica de IVA según tipo de comprobante
+    let ivaCalculado = 0;
+    const esFacturaA = parseInt(formData.voucher_type) === 1;
+
+    if (esFacturaA) {
+      // En Factura A, el precio unitario suele ser NETO, y el IVA se suma
+      ivaCalculado = netoCalculado * (calculadora.alicuotaIVA / 100);
     } else {
-      // Para factura tipo B (IVA incluido) o C
-      setFormData(prev => ({
-        ...prev,
-        total_amount: totalNum,
-        net_amount: totalNum, // En B/C el total va al neto para efectos de este form simple
-        vat_amount: 0,
-      }));
+      // En Factura B (Consumidor Final), el precio unitario suele incluir IVA
+      // Pero para mantener la consistencia con tu pedido de "se saca el precio y a eso se le suma el iva"
+      // asumiremos que ingresas NETO y sumamos IVA, pero en B el "neto gravado" es el total/1.21
+      // Simplificación: Tratamos el input siempre como NETO para el cálculo
+      ivaCalculado = netoCalculado * (calculadora.alicuotaIVA / 100);
     }
+
+    const otrosTributos = parseFloat(formData.tributes_amount) || 0;
+    const exento = parseFloat(formData.exempt_amount) || 0;
+    const noGravado = parseFloat(formData.non_taxable_amount) || 0;
+
+    const totalFinal = netoCalculado + ivaCalculado + otrosTributos + exento + noGravado;
+
+    setFormData(prev => ({
+      ...prev,
+      net_amount: parseFloat(netoCalculado.toFixed(2)),
+      vat_amount: parseFloat(ivaCalculado.toFixed(2)),
+      total_amount: parseFloat(totalFinal.toFixed(2))
+    }));
+  };
+
+  const handleCalculadoraChange = (e) => {
+    const { name, value } = e.target;
+    setCalculadora(prev => ({
+      ...prev,
+      [name]: parseFloat(value) || 0
+    }));
+  };
+  
+  const handleUnitChange = (e) => {
+      setCalculadora(prev => ({ ...prev, unidad: e.target.value }));
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
     setFormData(prev => {
-      // Convertir a número si es un campo de importe o ID
-      const isNumber = ['total_amount', 'sales_point', 'voucher_type', 'concept', 'doc_type', 'condicion_iva_receptor_id'].includes(name);
-      const finalValue = isNumber ? (parseFloat(value) || 0) : value;
-      
-      const newData = { ...prev, [name]: finalValue };
-      
-      // Si cambia el total o el tipo, recalcular
-      if (name === 'total_amount') {
-        calcularImportes(finalValue, prev.voucher_type);
-      }
+      // Si cambia el tipo de comprobante, ajustamos defaults
       if (name === 'voucher_type') {
-        calcularImportes(prev.total_amount, finalValue);
-        
-        // Autocompletar sugerencias según tipo
-        if (parseInt(finalValue) === 1) { // Factura A
-            newData.doc_type = 80; // CUIT
-            newData.condicion_iva_receptor_id = 1; // Resp Inscripto
-        } else if (parseInt(finalValue) === 6 || parseInt(finalValue) === 11) { // B o C
-            newData.doc_type = 80; // Por defecto CUIT (o DNI)
-            newData.condicion_iva_receptor_id = 5; // Consumidor Final
-        }
+        const tipo = parseInt(value);
+        return {
+            ...prev,
+            [name]: tipo,
+            doc_type: tipo === 1 ? 80 : 96, // 80 CUIT para A, 96 DNI para B
+            condicion_iva_receptor_id: tipo === 1 ? 1 : 5 // 1 Resp Inscripto, 5 Consumidor Final
+        };
       }
-      
-      return newData;
+      return { ...prev, [name]: value };
     });
   };
 
@@ -151,16 +165,18 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     setLoading(true);
 
     try {
-      // Validaciones básicas
       if (!formData.doc_number) {
           showError("Debe ingresar un número de documento");
           setLoading(false);
           return;
       }
 
-      // Preparar datos para enviar con los tipos correctos (int/float)
+      // Mapeo de alícuota a ID de AFIP (5=21%, 4=10.5%, 3=0%)
+      const alicuotaMap = { 21: 5, 10.5: 4, 27: 6, 0: 3 };
+      const idAlicuota = alicuotaMap[calculadora.alicuotaIVA] || 5;
+
       const facturaData = {
-        viaje_id: formData.viaje_id,
+        ...formData,
         sales_point: parseInt(formData.sales_point),
         voucher_type: parseInt(formData.voucher_type),
         concept: parseInt(formData.concept),
@@ -168,31 +184,29 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
         doc_number: formData.doc_number.toString(),
         condicion_iva_receptor_id: parseInt(formData.condicion_iva_receptor_id),
         
+        // Importes numéricos
         total_amount: parseFloat(formData.total_amount),
         net_amount: parseFloat(formData.net_amount),
         vat_amount: parseFloat(formData.vat_amount),
-        non_taxable_amount: 0,
-        exempt_amount: 0,
-        tributes_amount: 0,
-        
-        currency: 'PES',
-        currency_rate: 1.0,
+        non_taxable_amount: parseFloat(formData.non_taxable_amount),
+        exempt_amount: parseFloat(formData.exempt_amount),
+        tributes_amount: parseFloat(formData.tributes_amount),
         
         // Fechas formateadas
         service_start_date: formatearFecha(formData.service_start_date),
         service_end_date: formatearFecha(formData.service_end_date),
         payment_due_date: formatearFecha(formData.payment_due_date) || formatearFecha(new Date()),
         
-        // Agregar detalles de IVA solo si es Factura A y hay monto
-        vat_details: (parseInt(formData.voucher_type) === 1 && formData.vat_amount > 0) ? [
+        // Detalle de IVA (Solo si es Factura A o hay importe de IVA)
+        vat_details: (formData.vat_amount > 0) ? [
           {
-            id: 5, // ID 5 es 21%
+            id: idAlicuota,
             base_imp: parseFloat(formData.net_amount),
             importe: parseFloat(formData.vat_amount),
           }
         ] : null,
         
-        tributes_details: []
+        tributes_details: [] // Dejamos vacío por ahora para simplificar
       };
 
       const response = await facturacionService.emitirFactura(facturaData);
@@ -211,7 +225,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
   const formatearFecha = (fecha) => {
     if (!fecha) return null;
     if (typeof fecha === 'string' && fecha.length === 8 && /^\d+$/.test(fecha)) return fecha;
-    
     const date = new Date(fecha);
     if (!isNaN(date.getTime())) {
       const year = date.getFullYear();
@@ -224,242 +237,143 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
 
   if (!isOpen) return null;
 
+  // Estilos comunes
+  const inputClass = `w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`;
+  const labelClass = `block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4`}>
-        <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] overflow-y-auto m-4`}>
+        <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex justify-between items-center">
-            <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Emitir Factura {viajeId && `(Viaje #${viajeId})`}
+            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Emitir Factura AFIP {viajeId && `(Viaje #${viajeId})`}
             </h2>
-            <button
-              onClick={() => onClose(false)}
-              className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} text-2xl`}
-            >
-              ×
-            </button>
+            <button onClick={() => onClose(false)} className="text-2xl">&times;</button>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {loadingParams ? (
-            <div className="text-center py-8">
-              <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Cargando parámetros de AFIP...</p>
-            </div>
+            <p className="text-center">Cargando parámetros...</p>
           ) : (
             <>
-              {/* --- FILA 1: Comprobante y Punto de Venta --- */}
+              {/* SECCIÓN 1: DATOS DEL COMPROBANTE */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Tipo de Comprobante *
-                  </label>
-                  <select
-                    name="voucher_type"
-                    value={formData.voucher_type}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                    required
-                  >
-                    {parametros.tiposComprobante.map((tipo) => (
-                      <option key={tipo.codigo} value={tipo.codigo}>{tipo.descripcion}</option>
-                    ))}
+                  <label className={labelClass}>Punto de Venta *</label>
+                  <select name="sales_point" value={formData.sales_point} onChange={handleChange} className={inputClass} required>
+                    {parametros.puntosVenta.map(p => <option key={p.codigo} value={p.codigo}>{p.descripcion}</option>)}
                   </select>
                 </div>
-
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Punto de Venta *
-                  </label>
-                  <select
-                    name="sales_point"
-                    value={formData.sales_point}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                    required
-                  >
-                    {parametros.puntosVenta.map((pv) => (
-                      <option key={pv.codigo} value={pv.codigo}>{pv.descripcion}</option>
-                    ))}
+                  <label className={labelClass}>Tipo Comprobante *</label>
+                  <select name="voucher_type" value={formData.voucher_type} onChange={handleChange} className={inputClass} required>
+                    {parametros.tiposComprobante.map(t => <option key={t.codigo} value={t.codigo}>{t.descripcion}</option>)}
                   </select>
                 </div>
-
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Concepto *
-                  </label>
-                  <select
-                    name="concept"
-                    value={formData.concept}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                    required
-                  >
-                    {parametros.tiposConcepto.map((c) => (
-                      <option key={c.codigo} value={c.codigo}>{c.descripcion}</option>
-                    ))}
+                  <label className={labelClass}>Concepto *</label>
+                  <select name="concept" value={formData.concept} onChange={handleChange} className={inputClass} required>
+                    {parametros.tiposConcepto.map(c => <option key={c.codigo} value={c.codigo}>{c.descripcion}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* --- FILA 2: Cliente --- */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Tipo Documento *
-                  </label>
-                  <select
-                    name="doc_type"
-                    value={formData.doc_type}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                    required
-                  >
-                    {parametros.tiposDocumento.map((t) => (
-                      <option key={t.codigo} value={t.codigo}>{t.descripcion}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Número Documento *
-                  </label>
-                  <input
-                    type="text"
-                    name="doc_number"
-                    value={formData.doc_number}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                    placeholder="CUIT/DNI sin guiones"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Condición IVA (Receptor) *
-                  </label>
-                  <select
-                    name="condicion_iva_receptor_id"
-                    value={formData.condicion_iva_receptor_id}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                    required
-                  >
-                    {parametros.condicionesIVA.length > 0 ? (
-                        parametros.condicionesIVA.map((c) => (
-                        <option key={c.codigo} value={c.codigo}>{c.descripcion}</option>
-                        ))
-                    ) : (
-                        <>
-                            <option value={1}>IVA Responsable Inscripto</option>
-                            <option value={5}>Consumidor Final</option>
-                            <option value={6}>Responsable Monotributo</option>
-                        </>
-                    )}
-                  </select>
+              {/* SECCIÓN 2: DATOS DEL CLIENTE */}
+              <div className={`p-4 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                <h3 className="text-md font-semibold mb-3">Datos del Cliente</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className={labelClass}>Condición IVA *</label>
+                    <select name="condicion_iva_receptor_id" value={formData.condicion_iva_receptor_id} onChange={handleChange} className={inputClass} required>
+                      {parametros.condicionesIVA.length > 0 
+                        ? parametros.condicionesIVA.map(c => <option key={c.codigo} value={c.codigo}>{c.descripcion}</option>)
+                        : <option value={1}>IVA Responsable Inscripto</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Tipo Documento *</label>
+                    <select name="doc_type" value={formData.doc_type} onChange={handleChange} className={inputClass} required>
+                      {parametros.tiposDocumento.map(t => <option key={t.codigo} value={t.codigo}>{t.descripcion}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Número Documento *</label>
+                    <input type="text" name="doc_number" value={formData.doc_number} onChange={handleChange} className={inputClass} placeholder="Sin guiones" required />
+                  </div>
                 </div>
               </div>
 
-              {/* --- FILA 3: Importes --- */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded bg-opacity-10 bg-blue-500">
-                <div>
-                  <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    IMPORTE TOTAL *
-                  </label>
-                  <input
-                    type="number"
-                    name="total_amount"
-                    value={formData.total_amount}
-                    onChange={handleChange}
-                    step="0.01"
-                    min="0"
-                    className={`w-full px-3 py-2 rounded border font-bold text-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Neto Gravado (Calc)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.net_amount}
-                    readOnly
-                    className="w-full px-3 py-2 rounded border bg-gray-100 text-gray-600 cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    IVA (21%)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.vat_amount}
-                    readOnly
-                    className="w-full px-3 py-2 rounded border bg-gray-100 text-gray-600 cursor-not-allowed"
-                  />
+              {/* SECCIÓN 3: CALCULADORA DE ÍTEMS */}
+              <div className={`p-4 rounded border-2 border-blue-500 ${darkMode ? 'bg-blue-900 bg-opacity-20' : 'bg-blue-50'}`}>
+                <h3 className="text-md font-bold mb-3 text-blue-600">Detalle de Facturación</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className={labelClass}>Cantidad *</label>
+                    <input type="number" name="cantidad" value={calculadora.cantidad} onChange={handleCalculadoraChange} min="1" className={inputClass} required />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Unidad</label>
+                    <input type="text" name="unidad" value={calculadora.unidad} onChange={handleUnitChange} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Precio Unitario (Neto) *</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-gray-500">$</span>
+                      <input type="number" name="precioUnitario" value={calculadora.precioUnitario} onChange={handleCalculadoraChange} className={`${inputClass} pl-8`} step="0.01" required />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Alícuota IVA</label>
+                    <select name="alicuotaIVA" value={calculadora.alicuotaIVA} onChange={handleCalculadoraChange} className={inputClass}>
+                      <option value={21}>21%</option>
+                      <option value={10.5}>10.5%</option>
+                      <option value={27}>27%</option>
+                      <option value={0}>0% (Exento)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              {/* --- FILA 4: Fechas --- */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* SECCIÓN 4: TOTALES (READ ONLY) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-right">
+                <div className="p-2">
+                  <label className="text-xs text-gray-500 uppercase">Neto Gravado</label>
+                  <div className="text-xl font-mono">{formData.net_amount.toFixed(2)}</div>
+                </div>
+                <div className="p-2">
+                  <label className="text-xs text-gray-500 uppercase">IVA</label>
+                  <div className="text-xl font-mono">{formData.vat_amount.toFixed(2)}</div>
+                </div>
+                <div className={`p-2 rounded ${darkMode ? 'bg-green-900' : 'bg-green-100'}`}>
+                  <label className="text-xs font-bold uppercase text-green-700">Total a Pagar</label>
+                  <div className="text-2xl font-bold text-green-700">$ {formData.total_amount.toFixed(2)}</div>
+                </div>
+              </div>
+
+              {/* SECCIÓN 5: FECHAS */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 border-gray-200">
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Fecha Inicio Servicio
-                  </label>
-                  <input
-                    type="date"
-                    name="service_start_date"
-                    value={formData.service_start_date}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                  />
+                  <label className={labelClass}>Inicio Servicio</label>
+                  <input type="date" name="service_start_date" value={formData.service_start_date} onChange={handleChange} className={inputClass} />
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Fecha Fin Servicio
-                  </label>
-                  <input
-                    type="date"
-                    name="service_end_date"
-                    value={formData.service_end_date}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                  />
+                  <label className={labelClass}>Fin Servicio</label>
+                  <input type="date" name="service_end_date" value={formData.service_end_date} onChange={handleChange} className={inputClass} />
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Vto. Pago
-                  </label>
-                  <input
-                    type="date"
-                    name="payment_due_date"
-                    value={formData.payment_due_date}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                  />
+                  <label className={labelClass}>Vto. Pago</label>
+                  <input type="date" name="payment_due_date" value={formData.payment_due_date} onChange={handleChange} className={inputClass} />
                 </div>
               </div>
 
               {/* Botones */}
-              <div className="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  type="button"
-                  onClick={() => onClose(false)}
-                  className={`px-6 py-2 rounded ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`px-6 py-2 rounded ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
-                >
-                  {loading ? 'Procesando en AFIP...' : 'Emitir Factura'}
+              <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+                <button type="button" onClick={() => onClose(false)} className={`px-6 py-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} hover:opacity-80`}>Cancelar</button>
+                <button type="submit" disabled={loading} className="px-6 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400">
+                  {loading ? 'Procesando...' : 'Emitir Factura'}
                 </button>
               </div>
             </>
