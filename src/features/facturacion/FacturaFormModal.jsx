@@ -309,6 +309,19 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
               {/* SECCIÓN 3: CALCULADORA DE ÍTEMS */}
               <div className={`p-4 rounded border-2 border-blue-500 ${darkMode ? 'bg-blue-900 bg-opacity-20' : 'bg-blue-50'}`}>
                 <h3 className="text-md font-bold mb-3 text-blue-600">Detalle de Facturación</h3>
+                
+                <div className="mb-4">
+                    <label className={labelClass}>Descripción del Servicio/Producto</label>
+                    <input 
+                        type="text" 
+                        name="description" 
+                        value={formData.description || ''} 
+                        onChange={handleChange}
+                        className={inputClass}
+                        placeholder="Ej: Flete Rosario - Córdoba (Carta de Porte 1234)"
+                    />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className={labelClass}>Cantidad *</label>
