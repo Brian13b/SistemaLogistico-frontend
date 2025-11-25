@@ -210,8 +210,17 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
       };
 
       const response = await facturacionService.emitirFactura(facturaData);
-      
+      const nuevaFactura = response.data;
       showSuccess(`Factura ${response.data.numero} emitida exitosamente. CAE: ${response.data.cae}`);
+
+      try {
+          showInfo("Descargando PDF...");
+          await facturacionService.descargarFactura(nuevaFactura.id, nuevaFactura.numero);
+      } catch (pdfError) {
+          console.error("Error descargando PDF:", pdfError);
+          showWarning("La factura se creó, pero falló la descarga automática del PDF. Intente desde la lista.");
+      }
+
       onClose(true);
     } catch (error) {
       console.error('Error al emitir factura:', error);
