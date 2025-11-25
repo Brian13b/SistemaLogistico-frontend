@@ -60,7 +60,7 @@ function AppRoutes() {
             <Facturacion />
           </ProtectedRoute>
         } />
-        <Route path="/finanzas" element={
+        <Route path="finanzas" element={
           <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
             < Finanzas />
           </ProtectedRoute>
