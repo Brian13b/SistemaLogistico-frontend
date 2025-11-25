@@ -59,6 +59,11 @@ function AppRoutes() {
             <Facturacion />
           </ProtectedRoute>
         } />
+        <Route path="/finanzas" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
+            < Finanzas />
+          </ProtectedRoute>
+        } />
         <Route path="" element={<Navigate to="/logged-in/dashboard" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

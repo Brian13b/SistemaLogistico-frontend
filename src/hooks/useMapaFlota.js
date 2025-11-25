@@ -35,7 +35,7 @@ export const useMapaFlota = () => {
             estadoTracking = 'OFFLINE';
           }
 
-          const conductor = conductores.find(c => c.id === vehiculo.conductor_id); 
+          const conductor = conductores.find(c => c.id === vehiculo.id_conductor); 
           const nombreConductor = conductor 
             ? `${conductor.nombre} ${conductor.apellido}` 
             : 'Sin Conductor';

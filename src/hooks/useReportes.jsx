@@ -4,7 +4,6 @@ import api from '../services/api';
 import { vehiculosService } from '../services/VehiculosService';
 import { conductoresService } from '../services/ConductoresService';
 
-// Colores para el gráfico de torta
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 export const useReportes = () => {
@@ -93,8 +92,8 @@ export const useReportes = () => {
       // C. Tabla de Viajes
       const viajesTransformados = backendData.viajes_tabla.map(viaje => ({
         id: viaje.id,
-        patente: viaje.vehiculo_id ? `ID ${viaje.vehiculo_id}` : "N/A", 
-        conductor: viaje.conductor_id ? `ID ${viaje.conductor_id}` : "N/A",
+        patente: "Ver Detalle", 
+        conductor: "Ver Detalle",
         origen: viaje.origen,
         destino: viaje.destino,
         fecha: viaje.fecha_salida,
