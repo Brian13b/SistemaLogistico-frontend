@@ -8,6 +8,7 @@ import Viajes from '../pages/viaje/Viajes';
 import Reportes from '../pages/Reportes';
 import Seguimiento from '../pages/Seguimiento';
 import Facturacion from '../pages/Facturacion';
+import Finanzas from '../pages/Finanzas';
 import PrivateRoute from './PrivateRoute';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
