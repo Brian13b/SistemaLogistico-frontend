@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { finanzasService } from '../services/finanzasService';
-import GastoFormModal from '../features/finanzas/GastoFormModal'; // (El que te pasé ayer)
-import IngresoFormModal from '../features/finanzas/IngresoFormModal'; // (El de arriba)
+import GastoFormModal from '../features/finanzas/GastoFormModal'; 
+import IngresoFormModal from '../features/finanzas/IngresoFormModal';
 import { FaPlus, FaMinus, FaFileInvoice } from 'react-icons/fa';
 
 export default function Finanzas() {
@@ -19,17 +19,14 @@ export default function Finanzas() {
   const cargarMovimientos = async () => {
     setLoading(true);
     try {
-      // Traemos todo y lo mezclamos
       const [gastosRes, ingresosRes] = await Promise.all([
         finanzasService.obtenerGastos(),
         finanzasService.obtenerIngresos()
       ]);
 
-      // Normalizamos para que tengan la misma estructura en la tabla
       const listaGastos = (gastosRes.data || []).map(g => ({ ...g, tipo_movimiento: 'EGRESO', categoria: g.tipo_gasto }));
       const listaIngresos = (ingresosRes.data || []).map(i => ({ ...i, tipo_movimiento: 'INGRESO', categoria: i.tipo_ingreso }));
 
-      // Unimos y ordenamos por fecha (más reciente primero)
       const todos = [...listaGastos, ...listaIngresos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       
       setMovimientos(todos);
@@ -91,7 +88,7 @@ export default function Finanzas() {
                   </span>
                 </td>
                 <td className={`px-6 py-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}>
-                  {mov.nombre || mov.descripcion} {/* Gasto tiene 'nombre', Ingreso 'descripcion' */}
+                  {mov.nombre || mov.descripcion}
                 </td>
                 <td className={`px-6 py-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {mov.categoria}

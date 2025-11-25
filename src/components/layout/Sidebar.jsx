@@ -1,4 +1,4 @@
-import { FaHome, FaTruck, FaUser, FaRoute, FaClipboardList, FaMapMarkedAlt, FaFileInvoiceDollar } from 'react-icons/fa';
+import { FaHome, FaTruck, FaUser, FaRoute, FaClipboardList, FaMapMarkedAlt, FaFileInvoiceDollar, FaArrowUp } from 'react-icons/fa';
 import NavItem from './NavItems';
 import PerfilMenu from './PerfilMenu';
 import { useTheme } from '../../context/ThemeContext';
@@ -30,6 +30,7 @@ function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile
             <NavItem icon={<FaClipboardList />} text="Reportes" path="/logged-in/reportes" isCollapsed={isSidebarCollapsed && !isMobile} />
             <NavItem icon={<FaMapMarkedAlt />} text="Seguimiento" path="/logged-in/seguimiento" isCollapsed={isSidebarCollapsed && !isMobile} />
             <NavItem icon={<FaFileInvoiceDollar />} text="Facturación" path="/logged-in/facturacion" isCollapsed={isSidebarCollapsed && !isMobile} />
+            <NavItem icon={<FaArrowUp />} text="Finanzas" path="/logged-in/finanzas" isCollapsed={isSidebarCollapsed && !isMobile} />
           </nav>
         </div>
         <div className={`p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
