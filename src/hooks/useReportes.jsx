@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNotification } from '../context/NotificationContext';
-// Asegúrate de importar tu cliente de API configurado (el que apunta al Gateway)
-// Puede ser '../services/api' o donde tengas la instancia de axios.
 import api from '../services/api'; 
+import { vehiculosService } from '../services/VehiculosService';
+import { conductoresService } from '../services/ConductoresService';
 
 // Colores para el gráfico de torta
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -12,40 +12,46 @@ export const useReportes = () => {
   const [error, setError] = useState(null);
   const { showError } = useNotification();
   
-  // Estado inicial con estructura vacía para no romper los componentes
   const [datos, setDatos] = useState({
     metricas: [],
     ingresosGastos: [],
     consumoCombustible: [],
-    estadoVehiculos: [], // Aquí mostraremos "Gastos por Categoría"
-    rendimientoConductores: [], // Lo dejaremos vacío o simulado si no llegamos a implementarlo
-    viajes: []
+    estadoVehiculos: [], 
+    rendimientoConductores: [], 
+    viajes: [],
+    vehiculos: [], 
+    conductores: []
   });
 
   const [filtros, setFiltros] = useState({
     periodo: "30days",
-    // Calculamos mes y año actual para el default
+    vehiculo: "all-vehicles",
+    conductor: "all-drivers",
     mes: new Date().getMonth() + 1,
     anio: new Date().getFullYear()
   });
 
   useEffect(() => {
     cargarDatos();
-  }, [filtros.mes, filtros.anio]); // Recargar si cambia el mes/año
+  }, [filtros.mes, filtros.anio]); 
 
   const cargarDatos = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // 1. Llamada al Backend (Endpoint de Finanzas que creamos ayer)
-      // Nota: Asegúrate de que la URL del gateway tenga la ruta /finanzas
-      const response = await api.get(`/finanzas/dashboard?mes=${filtros.mes}&anio=${filtros.anio}`);
-      const backendData = response.data;
+      // 1. Llamada al Backend (Dashboard + Listas para filtros)
+      const [dashboardRes, vehiculosRes, conductoresRes] = await Promise.all([
+          api.get(`/finanzas/dashboard?mes=${filtros.mes}&anio=${filtros.anio}`),
+          vehiculosService.getAll(),
+          conductoresService.getAll()
+      ]);
 
-      // 2. Transformación de Datos (Backend -> Frontend UI)
+      const backendData = dashboardRes.data;
 
-      // A. Tarjetas Superiores (Métricas)
+      // 2. Transformación de Datos del Dashboard
+
+      // A. Métricas
       const metricasTransformadas = [
         {
           title: "Ingresos Totales",
@@ -68,19 +74,18 @@ export const useReportes = () => {
           change: "Resultado",
           trend: backendData.metricas.balance >= 0 ? "up" : "down"
         },
-        // Si quieres mostrar algo más, puedes agregarlo o dejar 3
         {
             title: "Viajes del Mes",
             value: backendData.viajes_tabla.length.toString(),
-            icon: "Truck",
+            icon: "Users",
             change: "Registrados",
             trend: "up"
         }
       ];
 
-      // B. Gráfico de Torta (Reutilizamos "estadoVehiculos" para mostrar "Gastos por Tipo")
+      // B. Gráfico Torta
       const gastosPorTipo = backendData.graficos.gastos_por_tipo.map((item, index) => ({
-        nombre: item.nombre, // Ej: "COMBUSTIBLE"
+        nombre: item.nombre,
         valor: item.valor,
         color: COLORS[index % COLORS.length]
       }));
@@ -88,40 +93,61 @@ export const useReportes = () => {
       // C. Tabla de Viajes
       const viajesTransformados = backendData.viajes_tabla.map(viaje => ({
         id: viaje.id,
-        patente: "Ver Detalle", // El endpoint actual no trae la patente (relación), pero no rompe nada
-        conductor: "Ver Detalle",
+        patente: viaje.vehiculo_id ? `ID ${viaje.vehiculo_id}` : "N/A", 
+        conductor: viaje.conductor_id ? `ID ${viaje.conductor_id}` : "N/A",
         origen: viaje.origen,
         destino: viaje.destino,
         fecha: viaje.fecha_salida,
-        kilometros: 0, // Dato pendiente
-        combustible: 0, // Dato pendiente
-        costo: viaje.precio, // Precio del viaje (Ingreso esperado)
+        kilometros: 0,
+        combustible: 0,
+        costo: viaje.precio,
         estado: viaje.estado
       }));
 
-      // 3. Actualizar Estado
+      // 3. Transformación de Listas para Filtros (Value/Label)
+      const opcionesVehiculos = [
+          { value: 'all-vehicles', label: 'Todos los vehículos' },
+          ...(vehiculosRes.data || []).map(v => ({ 
+              value: v.id, 
+              label: `${v.marca} ${v.modelo} - ${v.patente}` 
+          }))
+      ];
+
+      const opcionesConductores = [
+          { value: 'all-drivers', label: 'Todos los conductores' },
+          ...(conductoresRes.data || []).map(c => ({ 
+              value: c.id, 
+              label: `${c.nombre} ${c.apellido}` 
+          }))
+      ];
+
+      // 4. Actualizar Estado
       setDatos({
         metricas: metricasTransformadas,
-        ingresosGastos: backendData.graficos.ingresos_gastos, // Ya viene listo del backend
-        consumoCombustible: backendData.graficos.consumo_combustible, // Ya viene listo
-        estadoVehiculos: gastosPorTipo, // Mostramos gastos aquí
-        rendimientoConductores: [], // Dejamos vacío por ahora para no complicar
-        viajes: viajesTransformados
+        ingresosGastos: backendData.graficos.ingresos_gastos,
+        consumoCombustible: backendData.graficos.consumo_combustible,
+        estadoVehiculos: gastosPorTipo,
+        rendimientoConductores: [],
+        viajes: viajesTransformados,
+        vehiculos: opcionesVehiculos,     
+        conductores: opcionesConductores 
       });
 
     } catch (err) {
       console.error('Error al cargar reporte:', err);
       setError('No se pudieron cargar los datos financieros.');
-      showError('Error al conectar con el servidor de reportes');
       
-      // (Opcional) Si falla, podrías dejar los datos vacíos o cargar un fallback
+      setDatos(prev => ({
+          ...prev,
+          vehiculos: prev.vehiculos.length ? prev.vehiculos : [{value: 'all', label: 'Error al cargar'}],
+          conductores: prev.conductores.length ? prev.conductores : [{value: 'all', label: 'Error al cargar'}]
+      }));
     } finally {
       setLoading(false);
     }
   };
 
   const aplicarFiltros = (nuevosFiltros) => {
-    // Aquí podrías lógica para convertir "30days" a mes/anio si quisieras
     setFiltros(prev => ({ ...prev, ...nuevosFiltros }));
   };
 
