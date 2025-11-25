@@ -1,7 +1,6 @@
 import api from './api';
 
 export const finanzasService = {
-  // --- GASTOS ---
   crearGasto: async (gastoData, archivo) => {
     const formData = new FormData();
     formData.append('gasto_data', JSON.stringify(gastoData));
@@ -14,7 +13,6 @@ export const finanzasService = {
 
   obtenerGastos: (filtros) => api.get('/gastos', { params: filtros }),
 
-  // --- INGRESOS ---
   crearIngreso: async (ingresoData, archivo) => {
     const formData = new FormData();
     formData.append('ingreso_data', JSON.stringify(ingresoData));
@@ -27,6 +25,5 @@ export const finanzasService = {
 
   obtenerIngresos: (filtros) => api.get('/ingresos', { params: filtros }),
   
-  // --- DASHBOARD (Resumen) ---
   obtenerResumen: (mes, anio) => api.get(`/finanzas/dashboard?mes=${mes}&anio=${anio}`)
 };

@@ -18,8 +18,6 @@ function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile
 
   return (
     <div className={sidebarClass} style={{ minWidth: isMobile ? undefined : isSidebarCollapsed ? '4rem' : '8rem' }}>
-      {/* Botón para colapsar/expandir en desktop */}
-      {/* Eliminado el botón de flecha, solo se controla desde el header */}
       <div className="flex flex-col h-full">
         <div className="mt-12 md:mt-0 flex-1">
           <nav className="mt-5 px-2">
@@ -41,7 +39,6 @@ function Sidebar({ isSidebarCollapsed, isSidebarOpenMobile, onSidebarCloseMobile
           />
         </div>
       </div>
-      {/* Cerrar drawer en mobile */}
       {isMobile && isSidebarOpenMobile && (
         <button
           onClick={onSidebarCloseMobile}
