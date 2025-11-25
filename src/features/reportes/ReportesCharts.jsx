@@ -1,23 +1,11 @@
 import { useTheme } from "../../context/ThemeContext"
-import { useReportes } from "../../hooks/useReportes"
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell, Legend
 } from "recharts"
 
-export function ReportesCharts() {
+export function ReportesCharts({ datos, loading }) {
   const { darkMode } = useTheme();
-  const { datos, loading } = useReportes();
 
   const chartColors = {
     text: darkMode ? "#e5e7eb" : "#6b7280",
@@ -30,22 +18,12 @@ export function ReportesCharts() {
   };
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="mb-4">
-              <div className={`h-6 w-32 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
-            </div>
-            <div className={`h-[300px] w-full rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
-          </div>
-        ))}
-      </div>
-    );
+    return <div className="h-64 w-full flex items-center justify-center">Cargando gráficos...</div>;
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Gráfico de Barras: Ingresos vs Gastos */}
       <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="mb-4">
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -58,46 +36,24 @@ export function ReportesCharts() {
             <XAxis dataKey="mes" stroke={chartColors.text} />
             <YAxis stroke={chartColors.text} />
             <Tooltip contentStyle={chartColors.tooltip} />
+            <Legend />
             <Bar dataKey="ingresos" fill="#3B82F6" name="Ingresos" radius={[4, 4, 0, 0]} />
             <Bar dataKey="gastos" fill="#EF4444" name="Gastos" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
+      {/* Gráfico de Torta: Distribución de Gastos*/}
       <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="mb-4">
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Consumo de Combustible
-          </h3>
-        </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={datos.consumoCombustible}>
-            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-            <XAxis dataKey="dia" stroke={chartColors.text} />
-            <YAxis stroke={chartColors.text} />
-            <Tooltip contentStyle={chartColors.tooltip} />
-            <Line
-              type="monotone"
-              dataKey="consumo"
-              stroke="#10B981"
-              strokeWidth={3}
-              dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
-              name="Litros"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <div className="mb-4">
-          <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Estado de Vehículos
+            Distribución de Gastos
           </h3>
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
-              data={datos.estadoVehiculos}
+              data={datos.estadoVehiculos} 
               cx="50%"
               cy="50%"
               innerRadius={60}
@@ -109,52 +65,35 @@ export function ReportesCharts() {
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip contentStyle={chartColors.tooltip} />
+            <Tooltip contentStyle={chartColors.tooltip} formatter={(value) => `$${value.toLocaleString()}`} />
+            <Legend />
           </PieChart>
         </ResponsiveContainer>
-        <div className="flex justify-center gap-6 mt-4">
-          {datos.estadoVehiculos.map((item) => (
-            <div key={item.nombre} className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                {item.nombre}: {item.valor}
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
 
-      <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+      {/* Gráfico de Líneas: Consumo Combustible */}
+      <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} lg:col-span-2`}>
         <div className="mb-4">
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Rendimiento por Conductor
+            Consumo de Combustible (Mes Actual)
           </h3>
         </div>
-        <div className="space-y-3">
-          {datos.rendimientoConductores.map((driver) => (
-            <div 
-              key={driver.nombre} 
-              className={`flex items-center justify-between p-3 rounded-lg ${
-                darkMode ? 'bg-gray-700' : 'bg-gray-50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${driver.color}`} />
-                <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {driver.nombre}
-                </span>
-              </div>
-              <div className="flex items-center gap-4 text-sm">
-                <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                  {driver.viajes} viajes
-                </span>
-                <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {driver.eficiencia}% eficiencia
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={datos.consumoCombustible}>
+            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+            <XAxis dataKey="dia" stroke={chartColors.text} label={{ value: 'Día', position: 'insideBottom', offset: -5 }} />
+            <YAxis stroke={chartColors.text} />
+            <Tooltip contentStyle={chartColors.tooltip} formatter={(value) => `$${value.toLocaleString()}`} />
+            <Line
+              type="monotone"
+              dataKey="consumo"
+              stroke="#10B981"
+              strokeWidth={3}
+              dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
+              name="Gasto Diario"
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
   )

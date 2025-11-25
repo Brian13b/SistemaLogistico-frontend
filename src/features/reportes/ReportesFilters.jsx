@@ -1,33 +1,18 @@
 import { Calendar, Download } from "lucide-react"
 import { useTheme } from "../../context/ThemeContext"
-import { useReportes } from "../../hooks/useReportes"
 import { periodosFiltro } from "../../utils/reportData"
 import { useState } from "react"
 
-export function ReportesFilters() {
+export function ReportesFilters({ datos, filtros, aplicarFiltros, exportarReporte, loading }) {
   const { darkMode } = useTheme();
-  const { datos, filtros, aplicarFiltros, exportarReporte, loading } = useReportes();
   const [showExportConfirm, setShowExportConfirm] = useState(false);
 
-  const handleFiltroChange = async (tipo, valor) => {
+  const handleFiltroChange = (tipo, valor) => {
     const nuevosFiltros = {
       ...filtros,
       [tipo]: valor
     };
-    await aplicarFiltros(nuevosFiltros);
-  };
-
-  const handleExportar = async () => {
-    setShowExportConfirm(true);
-  };
-
-  const confirmarExportacion = async () => {
-    setShowExportConfirm(false);
-    await exportarReporte('csv');
-  };
-
-  const cancelarExportacion = () => {
-    setShowExportConfirm(false);
+    aplicarFiltros(nuevosFiltros);
   };
 
   return (
@@ -45,7 +30,7 @@ export function ReportesFilters() {
                   darkMode 
                     ? 'bg-gray-700 border-gray-600 text-gray-200' 
                     : 'bg-white border-gray-300 text-gray-900'
-                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 {periodosFiltro.map((periodo) => (
                   <option key={periodo.value} value={periodo.value}>
@@ -63,9 +48,9 @@ export function ReportesFilters() {
                 darkMode 
                   ? 'bg-gray-700 border-gray-600 text-gray-200' 
                   : 'bg-white border-gray-300 text-gray-900'
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              }`}
             >
-              {datos.vehiculos.map((vehiculo) => (
+              {datos.vehiculos && datos.vehiculos.map((vehiculo) => (
                 <option key={vehiculo.value} value={vehiculo.value}>
                   {vehiculo.label}
                 </option>
@@ -80,9 +65,9 @@ export function ReportesFilters() {
                 darkMode 
                   ? 'bg-gray-700 border-gray-600 text-gray-200' 
                   : 'bg-white border-gray-300 text-gray-900'
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              }`}
             >
-              {datos.conductores.map((conductor) => (
+              {datos.conductores && datos.conductores.map((conductor) => (
                 <option key={conductor.value} value={conductor.value}>
                   {conductor.label}
                 </option>
@@ -92,7 +77,7 @@ export function ReportesFilters() {
 
           <div className="flex gap-2">
             <button
-              onClick={handleExportar}
+              onClick={() => setShowExportConfirm(true)}
               disabled={loading}
               className={`h-9 px-3 py-1 text-sm rounded border flex items-center gap-2 transition-colors ${
                 darkMode 
@@ -101,45 +86,12 @@ export function ReportesFilters() {
               } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Download className="h-4 w-4" />
-              {loading ? 'Exportando...' : 'Exportar'}
+              Exportar
             </button>
           </div>
         </div>
-        
-        {/* Mostrar filtros activos */}
-        {(filtros.periodo !== "30days" || filtros.vehiculo !== "all-vehicles" || filtros.conductor !== "all-drivers") && (
-          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex flex-wrap gap-2">
-              <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Filtros activos:
-              </span>
-              {filtros.periodo !== "30days" && (
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  darkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {periodosFiltro.find(p => p.value === filtros.periodo)?.label}
-                </span>
-              )}
-              {filtros.vehiculo !== "all-vehicles" && (
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'
-                }`}>
-                  {datos.vehiculos.find(v => v.value === filtros.vehiculo)?.label}
-                </span>
-              )}
-              {filtros.conductor !== "all-drivers" && (
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  darkMode ? 'bg-yellow-900 text-yellow-200' : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {datos.conductores.find(c => c.value === filtros.conductor)?.label}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Modal de confirmación de exportación */}
       {showExportConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className={`p-6 rounded-lg shadow-xl max-w-md w-full mx-4 ${
@@ -147,26 +99,21 @@ export function ReportesFilters() {
           }`}>
             <h3 className="text-lg font-semibold mb-4">Confirmar Exportación</h3>
             <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              ¿Estás seguro de que quieres exportar {datos.viajes.length} viajes a un archivo CSV?
+              ¿Estás seguro de que quieres exportar los datos actuales a CSV?
             </p>
             <div className="flex gap-3 justify-end">
               <button
-                onClick={cancelarExportacion}
-                className={`h-9 px-4 py-2 rounded border transition-colors ${
-                  darkMode 
-                    ? 'border-gray-600 bg-transparent text-gray-300 hover:bg-gray-700 hover:text-white' 
-                    : 'border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50'
-                }`}
+                onClick={() => setShowExportConfirm(false)}
+                className={`h-9 px-4 py-2 rounded border ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}
               >
                 Cancelar
               </button>
               <button
-                onClick={confirmarExportacion}
-                className={`h-9 px-4 py-2 rounded transition-colors ${
-                  darkMode
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'bg-blue-500 hover:bg-blue-600 text-white'
-                }`}
+                onClick={() => {
+                    exportarReporte('csv');
+                    setShowExportConfirm(false);
+                }}
+                className="h-9 px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
               >
                 Exportar
               </button>
