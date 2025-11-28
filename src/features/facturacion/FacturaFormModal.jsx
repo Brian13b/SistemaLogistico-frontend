@@ -5,7 +5,7 @@ import { facturacionService } from '../../services/FacturacionService';
 
 export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viajeData = null }) {
   const { darkMode } = useTheme();
-  const { showSuccess, showError } = useNotification();
+  const { showSuccess, showError, showInfo, showWarning } = useNotification();
   const [loading, setLoading] = useState(false);
   const [loadingParams, setLoadingParams] = useState(true);
   
