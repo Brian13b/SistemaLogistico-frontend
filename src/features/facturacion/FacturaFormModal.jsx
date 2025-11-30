@@ -318,7 +318,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className={labelClass}>Cantidad *</label>
-                    <input type="decimal" name="cantidad" value={calculadora.cantidad} onChange={handleCalculadoraChange} min="0.01" step="0.01" className={inputClass} required />
+                    <input type="number" name="cantidad" value={calculadora.cantidad} onChange={handleCalculadoraChange} min="0.01" step="0.01" className={inputClass} required />
                   </div>
                   <div>
                     <label className={labelClass}>Unidad</label>
