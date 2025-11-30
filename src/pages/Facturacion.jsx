@@ -73,8 +73,20 @@ export default function Facturacion() {
 
   const formatearFecha = (fecha) => {
     if (!fecha) return '';
+    
+    if (typeof fecha === 'string' && fecha.length === 8 && /^\d+$/.test(fecha)) {
+      const anio = fecha.substring(0, 4);
+      const mes = fecha.substring(4, 6);
+      const dia = fecha.substring(6, 8);
+      return `${dia}/${mes}/${anio}`;
+    }
+
     const date = new Date(fecha);
-    return date.toLocaleDateString('es-AR');
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString('es-AR');
+    }
+    
+    return fecha; 
   };
 
   const formatearNumeroFactura = (tipo, puntoVta, numero) => {
