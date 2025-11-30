@@ -52,7 +52,6 @@ export default function Facturacion() {
 
   const handleDescargarPdf = async (factura) => {
     try {
-        // Mostramos un toast o spinner si quieres
         await facturacionService.descargarFactura(factura.id, factura.numero);
         showSuccess('Factura descargada correctamente');
     } catch (error) {

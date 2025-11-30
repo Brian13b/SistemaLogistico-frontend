@@ -9,31 +9,27 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
   const [loading, setLoading] = useState(false);
   const [loadingParams, setLoadingParams] = useState(true);
   
-  // Estados para el cálculo de ítems (Tu nuevo requerimiento)
   const [calculadora, setCalculadora] = useState({
     cantidad: 1,
     precioUnitario: viajeData?.precio || 0,
-    unidad: 'Unidad', // Solo visual/interno por ahora
-    alicuotaIVA: 21 // Por defecto 21%
+    unidad: 'Toneladas', 
+    alicuotaIVA: 21 
   });
 
-  // Estado del formulario principal (Estructura AFIP)
   const [formData, setFormData] = useState({
     viaje_id: viajeId,
     sales_point: 1,
-    voucher_type: 1, // 1: Factura A, 6: Factura B
-    concept: 2, // 2: Servicios
-    doc_type: 80, // 80: CUIT
+    voucher_type: 1, 
+    concept: 2, 
+    doc_type: 80,
     doc_number: '',
     condicion_iva_receptor_id: 1,
     can_mis_mon_ext: 'N',
     
-    // Estos se calcularán automáticamente
     total_amount: 0,
     net_amount: 0,
     vat_amount: 0,
     
-    // Campos opcionales inicializados en 0
     non_taxable_amount: 0,
     exempt_amount: 0,
     tributes_amount: 0,
@@ -41,7 +37,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     currency: 'PES',
     currency_rate: 1.0,
     
-    // Fechas
     service_start_date: viajeData?.fecha_salida || '',
     service_end_date: viajeData?.fecha_llegada || '',
     payment_due_date: '',
@@ -51,7 +46,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     tiposComprobante: [],
     puntosVenta: [],
     tiposDocumento: [],
-    tiposIVA: [], // Para llenar el select de alícuotas
+    tiposIVA: [], 
     tiposConcepto: [],
     condicionesIVA: [],
   });
@@ -62,7 +57,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     }
   }, [isOpen]);
 
-  // Efecto para recalcular cuando cambian los inputs de la calculadora o el tipo de comprobante
   useEffect(() => {
     recalcularTotales();
   }, [calculadora, formData.voucher_type, formData.tributes_amount, formData.exempt_amount]);
@@ -102,18 +96,12 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
     const precio = parseFloat(calculadora.precioUnitario) || 0;
     const netoCalculado = cant * precio;
 
-    // Lógica de IVA según tipo de comprobante
     let ivaCalculado = 0;
     const esFacturaA = parseInt(formData.voucher_type) === 1;
 
     if (esFacturaA) {
-      // En Factura A, el precio unitario suele ser NETO, y el IVA se suma
       ivaCalculado = netoCalculado * (calculadora.alicuotaIVA / 100);
     } else {
-      // En Factura B (Consumidor Final), el precio unitario suele incluir IVA
-      // Pero para mantener la consistencia con tu pedido de "se saca el precio y a eso se le suma el iva"
-      // asumiremos que ingresas NETO y sumamos IVA, pero en B el "neto gravado" es el total/1.21
-      // Simplificación: Tratamos el input siempre como NETO para el cálculo
       ivaCalculado = netoCalculado * (calculadora.alicuotaIVA / 100);
     }
 
@@ -146,7 +134,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => {
-      // Si cambia el tipo de comprobante, ajustamos defaults
       if (name === 'voucher_type') {
         const tipo = parseInt(value);
         return {
@@ -184,7 +171,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
         doc_number: formData.doc_number.toString(),
         condicion_iva_receptor_id: parseInt(formData.condicion_iva_receptor_id),
         
-        // Importes numéricos
         total_amount: parseFloat(formData.total_amount),
         net_amount: parseFloat(formData.net_amount),
         vat_amount: parseFloat(formData.vat_amount),
@@ -192,12 +178,10 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
         exempt_amount: parseFloat(formData.exempt_amount),
         tributes_amount: parseFloat(formData.tributes_amount),
         
-        // Fechas formateadas
         service_start_date: formatearFecha(formData.service_start_date),
         service_end_date: formatearFecha(formData.service_end_date),
         payment_due_date: formatearFecha(formData.payment_due_date) || formatearFecha(new Date()),
         
-        // Detalle de IVA (Solo si es Factura A o hay importe de IVA)
         vat_details: (formData.vat_amount > 0) ? [
           {
             id: idAlicuota,
@@ -206,7 +190,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
           }
         ] : null,
         
-        tributes_details: [] // Dejamos vacío por ahora para simplificar
+        tributes_details: [] 
       };
 
       const response = await facturacionService.emitirFactura(facturaData);
@@ -267,7 +251,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
             <p className="text-center">Cargando parámetros...</p>
           ) : (
             <>
-              {/* SECCIÓN 1: DATOS DEL COMPROBANTE */}
+              {/* DATOS DEL COMPROBANTE */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className={labelClass}>Punto de Venta *</label>
@@ -289,7 +273,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                 </div>
               </div>
 
-              {/* SECCIÓN 2: DATOS DEL CLIENTE */}
+              {/* DATOS DEL CLIENTE */}
               <div className={`p-4 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                 <h3 className="text-md font-semibold mb-3">Datos del Cliente</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -315,7 +299,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                 </div>
               </div>
 
-              {/* SECCIÓN 3: CALCULADORA DE ÍTEMS */}
+              {/* CALCULADORA DE ÍTEMS */}
               <div className={`p-4 rounded border-2 border-blue-500 ${darkMode ? 'bg-blue-900 bg-opacity-20' : 'bg-blue-50'}`}>
                 <h3 className="text-md font-bold mb-3 text-blue-600">Detalle de Facturación</h3>
                 
@@ -334,7 +318,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className={labelClass}>Cantidad *</label>
-                    <input type="number" name="cantidad" value={calculadora.cantidad} onChange={handleCalculadoraChange} min="1" className={inputClass} required />
+                    <input type="decimal" name="cantidad" value={calculadora.cantidad} onChange={handleCalculadoraChange} min="0.01" step="0.01" className={inputClass} required />
                   </div>
                   <div>
                     <label className={labelClass}>Unidad</label>
