@@ -158,10 +158,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
           return;
       }
 
-      // Mapeo de alícuota a ID (5=21%, 4=10.5%, 6=27%, 3=0%)
-      const alicuotaMap = { 21: 5, 10.5: 4, 27: 6, 0: 3 };
-      const idAlicuota = alicuotaMap[calculadora.alicuotaIVA] || 5;
-
       const facturaData = {
         ...formData,
         sales_point: parseInt(formData.sales_point),
@@ -174,42 +170,51 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
         total_amount: parseFloat(formData.total_amount),
         net_amount: parseFloat(formData.net_amount),
         vat_amount: parseFloat(formData.vat_amount),
-        non_taxable_amount: parseFloat(formData.non_taxable_amount),
-        exempt_amount: parseFloat(formData.exempt_amount),
-        tributes_amount: parseFloat(formData.tributes_amount),
         
+        cantidad: parseFloat(calculadora.cantidad),
+        unidad_medida: calculadora.unidad || 'Unidad',
+        precio_unitario: parseFloat(calculadora.precioUnitario),
+        alicuota_iva: parseFloat(calculadora.alicuotaIVA),
+        description: formData.description || `Facturación de ${calculadora.unidad}`,
+        
+        non_taxable_amount: 0,
+        exempt_amount: 0,
+        tributes_amount: 0,
+        
+        currency: 'PES',
+        currency_rate: 1.0,
         service_start_date: formatearFecha(formData.service_start_date),
         service_end_date: formatearFecha(formData.service_end_date),
         payment_due_date: formatearFecha(formData.payment_due_date) || formatearFecha(new Date()),
         
-        vat_details: (formData.vat_amount > 0) ? [
-          {
-            id: idAlicuota,
+        vat_details: (formData.vat_amount > 0) ? [{
+            id: [21, 10.5, 27].includes(calculadora.alicuotaIVA) ? {21:5, 10.5:4, 27:6}[calculadora.alicuotaIVA] : 5,
             base_imp: parseFloat(formData.net_amount),
             importe: parseFloat(formData.vat_amount),
-          }
-        ] : null,
-        
-        tributes_details: [] 
+        }] : null,
+        tributes_details: []
       };
 
       const response = await facturacionService.emitirFactura(facturaData);
       const nuevaFactura = response.data;
-      showSuccess(`Factura ${response.data.numero} emitida exitosamente. CAE: ${response.data.cae}`);
-
+      showSuccess(`Factura ${nuevaFactura.numero} emitida. CAE: ${nuevaFactura.cae}`);
+      
       try {
-          showInfo("Descargando PDF...");
-          await facturacionService.descargarFactura(nuevaFactura.id, nuevaFactura.numero);
-      } catch (pdfError) {
-          console.error("Error descargando PDF:", pdfError);
-          showWarning("La factura se creó, pero falló la descarga automática del PDF. Intente desde la lista.");
+        showInfo("Descargando PDF...");
+        await facturacionService.descargarFactura(nuevaFactura.id, nuevaFactura.numero);
+      } catch (err) {
+        console.warn("No se pudo descargar el PDF automaticamente", err);
       }
 
       onClose(true);
     } catch (error) {
-      console.error('Error al emitir factura:', error);
-      const errorMessage = error.response?.data?.detail || 'Error al emitir la factura';
-      showError(errorMessage);
+      console.error('Error:', error);
+      let msg = "Error al emitir";
+      if (error.response?.data?.detail) {
+        const d = error.response.data.detail;
+        msg = Array.isArray(d) ? d.map(x => x.msg).join(', ') : str(d);
+      }
+      showError(msg);
     } finally {
       setLoading(false);
     }
