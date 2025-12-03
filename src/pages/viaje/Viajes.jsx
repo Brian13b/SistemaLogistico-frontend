@@ -14,21 +14,18 @@ import { useTheme } from '../../context/ThemeContext';
 
 function Viajes() {
   const { darkMode } = useTheme();
-  // Estados para datos
   const [viajes, setViajes] = useState([]);
   const [conductores, setConductores] = useState([]);
   const [vehiculos, setVehiculos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Estados para modales
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [documentosModalOpen, setDocumentosModalOpen] = useState(false);
   const [selectedViajeId, setSelectedViajeId] = useState(null);
   const [selectedViajeInfo, setSelectedViajeInfo] = useState('');
 
-  // Filtros y paginación con hook personalizado
   const {
     searchTerm,
     setSearchTerm,
@@ -74,7 +71,6 @@ function Viajes() {
     fetchData();
   }, []);
 
-  // Configuración de filtros avanzados
   const filterConfig = [
     { name: 'origen', label: 'Origen' },
     { name: 'destino', label: 'Destino' },
@@ -83,7 +79,6 @@ function Viajes() {
     { name: 'estado', label: 'Estado' }
   ];
 
-  // Función para formatear datos de viajes
   const viajesData = useMemo(() => {
     const getConductorInfo = (conductorId) => {
       if (!conductorId) return null;
@@ -158,11 +153,9 @@ function Viajes() {
     }).sort((a, b) => a.id - b.id);
   }, [viajes, conductores, vehiculos, darkMode]);
 
-  // Aplicar filtros y paginación
   const filteredViajes = filteredData(viajesData);
   const { paginatedData: currentViajes, totalPaginas, totalItems } = paginateData(filteredViajes);
 
-  // Handlers
   const handleNewViajeClick = () => {
     setSelectedViajeId(null);
     setEditModalOpen(true);

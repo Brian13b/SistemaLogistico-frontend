@@ -37,7 +37,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
       setUsers(userList);
     } catch (error) {
       setError('Error al cargar usuarios');
-      console.error('Error al cargar usuarios:', error);
       showError('Error al cargar usuarios');
     } finally {
       setIsLoading(false);
@@ -86,7 +85,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
       fetchUsers();
     } catch (error) {
       setError(error.message || `Error al ${isEditing ? 'actualizar' : 'agregar'} usuario`);
-      console.error('Submission error:', error);
       showError(error.message || 'Ocurrió un error');
     }
   };
@@ -102,7 +100,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
       fetchUsers();
       showSuccess('Usuario eliminado correctamente');
     } catch (error) {
-      console.error('Delete error:', error);
       showError('Error al eliminar usuario');
     } finally {
       setConfirmOpen(false);
@@ -148,7 +145,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
           </button>
         </div>
 
-        {/* Error */}
         {error && (
           <div
             className={`mb-4 p-3 rounded 
@@ -161,7 +157,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Username */}
             <div>
               <label className={`block mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                 Nombre de Usuario
@@ -178,7 +173,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
               />
             </div>
 
-            {/* Email */}
             <div>
               <label className={`block mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                 Correo Electrónico
@@ -194,7 +188,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className={`block mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                 Contraseña
@@ -220,7 +213,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
               </button>
             </div>
 
-            {/* Role */}
             <div>
               <label className={`block mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                 Rol
@@ -238,7 +230,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
             </div>
           </div>
 
-          {/* Botones */}
           <div className="mt-4 flex justify-end space-x-2">
             {isEditing && (
               <button
@@ -274,7 +265,6 @@ const UserConfigModal = ({ isOpen, onClose, onAddUser, onEditUser, onDeleteUser,
           </div>
         </form>
 
-        {/* Lista de usuarios */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Usuarios Registrados</h3>
           {isLoading ? (

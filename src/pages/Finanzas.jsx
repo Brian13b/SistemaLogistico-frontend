@@ -59,7 +59,7 @@ export default function Finanzas() {
         </div>
       </div>
 
-      {/* TABLA DE MOVIMIENTOS */}
+      {/* Tabla de movimientos */}
       <div className={`rounded-lg overflow-hidden shadow ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <table className="w-full">
           <thead className={darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-50 text-gray-700'}>
@@ -111,7 +111,7 @@ export default function Finanzas() {
         </table>
       </div>
 
-      {/* MODALES */}
+      {/* Modales */}
       <GastoFormModal 
         isOpen={modalGastoOpen} 
         onClose={(refresh) => {

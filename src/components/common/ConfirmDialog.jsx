@@ -8,7 +8,7 @@ const ConfirmDialog = ({
   onConfirm, 
   onCancel, 
   darkMode,
-  type = 'warning', // 'warning', 'info', 'success', 'danger'
+  type = 'warning', 
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
   isLoading = false,

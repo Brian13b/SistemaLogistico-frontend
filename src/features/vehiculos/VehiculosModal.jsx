@@ -114,7 +114,7 @@ function VehiculoModal({ isOpen, onClose, vehiculoId, darkMode }) {
         </div>
       ) : vehiculo ? (
         <div className="space-y-6" ref={contentRef}>
-          {/* Encabezado con foto e información principal */}
+          {/* Encabezado e información principal */}
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
             <div className="flex-grow">
               <h2 className="text-xl font-bold mb-1">{vehiculo.marca} {vehiculo.modelo}</h2>
@@ -126,7 +126,7 @@ function VehiculoModal({ isOpen, onClose, vehiculoId, darkMode }) {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Estado</p>
                   <span className={`px-2 py-1 rounded text-sm ${
-                    (vehiculo.estado === 'ACTIVO') 
+                    (vehiculo.estado === 'ACTIVO' || vehiculo.estado === 'Activo') 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-red-100 text-red-800'
                   }`}>

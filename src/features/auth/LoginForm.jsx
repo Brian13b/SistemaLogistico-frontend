@@ -33,10 +33,8 @@ function LoginForm({ darkMode }) {
       showSuccess(`Bienvenido ${decodedToken.sub}!`);
   
       if (role === 'ADMINISTRADOR') {
-        console.log("Redirigiendo como administrador...");
         navigate('logged-in/dashboard');
       } else if (role === 'CONDUCTOR') {
-        console.log("Redirigiendo como conductor...");
         navigate('/logged-in/viajes');
       } else {
         console.error("Rol de usuario no válido:", role);

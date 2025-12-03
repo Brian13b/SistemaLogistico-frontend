@@ -7,12 +7,10 @@ import { useTheme } from '../../context/ThemeContext';
 function LoginPage() {
   const { darkMode, toggleDarkMode } = useTheme();
 
-  // DESPERTADOR DE SERVIDORES
   useEffect(() => {
     const despertarServidores = async () => {
       try {
-        console.log("⏰ Intentando despertar al Gateway y Backends...");
-        //await api.get('/health'); 
+        console.log("⏰ Intentando despertar los servidores...");
         await fetch('https://logistico-gateway.onrender.com/docs'); 
         await fetch('https://logistico-backend.onrender.com/docs');
         await fetch('https://sistemalogistico-tracking.onrender.com/api/docs');
@@ -28,7 +26,7 @@ function LoginPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Background image */}
+      {/* Background */}
       <div className="hidden lg:block lg:w-2/3 relative">
         <img 
           src="https://picsum.photos/id/2/1200/800"
@@ -52,7 +50,7 @@ function LoginPage() {
         </div>
       </div>
 
-      {/* Login form */}
+      {/* Login */}
       <div className={`w-full lg:w-1/3 flex flex-col justify-center p-8 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="absolute top-4 right-4">
           <ThemeToggle />

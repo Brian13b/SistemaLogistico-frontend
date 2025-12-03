@@ -35,7 +35,7 @@ export const useTableControls = (initialFilters = {}, initialItemsPerPage = 5) =
   const paginateData = (data) => {
     const totalPaginas = Math.ceil(data.length / itemsPorPagina);
     
-    // Ajustar página actual si es necesario
+    // Ajustar página actual 
     if (paginaActual > totalPaginas && totalPaginas > 0) {
       setPaginaActual(totalPaginas);
     }

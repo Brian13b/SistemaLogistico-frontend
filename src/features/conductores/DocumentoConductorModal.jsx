@@ -85,7 +85,6 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
     setError(null);
 
     try {
-      // Crear FormData para enviar datos y archivo
       const uploadData = new FormData();
       uploadData.append("documento_data", JSON.stringify(formData));
       uploadData.append("archivo", file);
@@ -94,7 +93,6 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
 
       setUploading(false);
 
-      // Resetear formulario
       setFormData({
         codigo_documento: "",
         id_conductor: conductorId,
@@ -105,7 +103,6 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
       });
       setFile(null);
 
-      // Actualizar lista de documentos
       fetchDocumentos();
     } catch (error) {
       setUploading(false);
@@ -125,7 +122,6 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
       const documento = documentos.find((doc) => doc.id === documentoId);
       const fileName = documento?.archivo_nombre || "documento.pdf";
 
-      // Crear elemento <a> para simular click y descargar
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", fileName);
@@ -415,7 +411,7 @@ function DocumentoConductorModal({isOpen, onClose, conductorId, conductorNombre,
           )}
         </div>
 
-        {/* Botones de acción */}
+        {/* Botones */}
         <div className="flex justify-end">
           <button
             onClick={onClose}

@@ -1,30 +1,28 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
-// Cargar actividades desde localStorage
 const loadActivitiesFromStorage = () => {
   try {
     const stored = localStorage.getItem('activities');
     return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    console.error('Error loading activities from localStorage:', error);
+    console.error('Error al cargar actividades desde localStorage:', error);
     return [];
   }
 };
 
-// Guardar actividades en localStorage
 const saveActivitiesToStorage = (activities) => {
   try {
     localStorage.setItem('activities', JSON.stringify(activities));
   } catch (error) {
-    console.error('Error saving activities to localStorage:', error);
+    console.error('Error al guardar actividades en localStorage:', error);
   }
 };
 
 const initialState = {
   items: loadActivitiesFromStorage(),
   filters: {
-    type: 'all', // 'all', 'vehiculo', 'conductor', 'viaje', 'documento'
-    dateRange: null, // { start: Date, end: Date }
+    type: 'all', 
+    dateRange: null, 
     search: ''
   },
   isLoading: false,
@@ -41,7 +39,7 @@ const activitiesSlice = createSlice({
         type: action.payload.type,
         title: action.payload.title,
         description: action.payload.description,
-        entity: action.payload.entity, // 'vehiculo', 'conductor', 'viaje', etc.
+        entity: action.payload.entity, 
         entityId: action.payload.entityId,
         timestamp: new Date().toISOString(),
         user: action.payload.user || 'Usuario actual',
@@ -50,12 +48,10 @@ const activitiesSlice = createSlice({
       
       state.items.unshift(newActivity);
       
-      // Mantener solo las últimas 100 actividades
-      if (state.items.length > 100) {
-        state.items = state.items.slice(0, 100);
+      if (state.items.length > 50) {
+        state.items = state.items.slice(0, 50);
       }
       
-      // Guardar en localStorage
       saveActivitiesToStorage(state.items);
     },
     
@@ -86,7 +82,6 @@ export const {
   setError 
 } = activitiesSlice.actions;
 
-// Selectores
 export const selectAllActivities = (state) => state.activities.items;
 export const selectFilteredActivities = createSelector(
   [(state) => state.activities.items, (state) => state.activities.filters],

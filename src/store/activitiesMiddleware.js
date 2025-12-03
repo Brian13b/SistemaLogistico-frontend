@@ -95,17 +95,13 @@ const actionToActivityType = {
 
 // Middleware de actividades
 export const activitiesMiddleware = (store) => (next) => (action) => {
-  // Ejecutar la acción original
   const result = next(action);
   
-  // Verificar si es una acción que debe generar actividad
   const activityConfig = actionToActivityType[action.type];
   
   if (activityConfig) {
-    // Generar descripción basada en el tipo de acción y datos
     const description = generateActivityDescription(action, activityConfig);
     
-    // Despachar la actividad
     store.dispatch(addActivity({
       type: activityConfig.type,
       title: activityConfig.title,
@@ -122,7 +118,6 @@ export const activitiesMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
-// Generar descripción de actividad basada en la acción
 const generateActivityDescription = (action, config) => {
   const { type, payload } = action;
   

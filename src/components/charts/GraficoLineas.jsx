@@ -22,7 +22,6 @@ export const GraficoLineas = ({ title, data, className = "" }) => {
     }
   };
 
-  // Convertir datos de Chart.js a formato Recharts
   const rechartsData = data.labels.map((label, index) => ({
     periodo: label,
     valor: data.datasets[0].data[index],

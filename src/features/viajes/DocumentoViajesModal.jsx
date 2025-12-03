@@ -80,7 +80,6 @@ function ViajesDocumentosModal({ isOpen, onClose, viajeId, darkMode }) {
     setError(null);
 
     try {
-      // Crear FormData para enviar datos y archivo
       const uploadData = new FormData();
       uploadData.append("documento_data", JSON.stringify(formData));
       uploadData.append("archivo", file);
@@ -89,7 +88,6 @@ function ViajesDocumentosModal({ isOpen, onClose, viajeId, darkMode }) {
 
       setUploading(false);
 
-      // Resetear formulario
       setFormData({
         tipo_documento: "",
         codigo_documento: "",
@@ -99,7 +97,6 @@ function ViajesDocumentosModal({ isOpen, onClose, viajeId, darkMode }) {
       });
       setFile(null);
 
-      // Actualizar lista de documentos
       fetchDocumentos();
     } catch (error) {
       setUploading(false);
@@ -122,7 +119,7 @@ function ViajesDocumentosModal({ isOpen, onClose, viajeId, darkMode }) {
       const documento = documentos.find((doc) => doc.id === documentoId);
       const fileName = documento?.archivo_nombre || "documento.pdf";
 
-      // Crear elemento <a> para simular click y descargar
+      // Descargar
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", fileName);

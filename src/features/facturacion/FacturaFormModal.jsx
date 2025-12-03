@@ -158,7 +158,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
           return;
       }
 
-      // Mapeo de alícuota a ID de AFIP (5=21%, 4=10.5%, 3=0%)
+      // Mapeo de alícuota a ID (5=21%, 4=10.5%, 6=27%, 3=0%)
       const alicuotaMap = { 21: 5, 10.5: 4, 27: 6, 0: 3 };
       const idAlicuota = alicuotaMap[calculadora.alicuotaIVA] || 5;
 
@@ -230,7 +230,6 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
 
   if (!isOpen) return null;
 
-  // Estilos comunes
   const inputClass = `w-full px-3 py-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`;
   const labelClass = `block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`;
 
@@ -240,7 +239,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
         <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex justify-between items-center">
             <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Emitir Factura AFIP {viajeId && `(Viaje #${viajeId})`}
+              Emitir Factura ARCA {viajeId && `(Viaje #${viajeId})`}
             </h2>
             <button onClick={() => onClose(false)} className="text-2xl">&times;</button>
           </div>
@@ -343,7 +342,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                 </div>
               </div>
 
-              {/* SECCIÓN 4: TOTALES (READ ONLY) */}
+              {/* TOTALES */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-right">
                 <div className="p-2">
                   <label className="text-xs text-gray-500 uppercase">Neto Gravado</label>
@@ -359,7 +358,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
                 </div>
               </div>
 
-              {/* SECCIÓN 5: FECHAS */}
+              {/* FECHAS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 border-gray-200">
                 <div>
                   <label className={labelClass}>Inicio Servicio</label>

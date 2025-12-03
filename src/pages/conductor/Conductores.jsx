@@ -12,19 +12,18 @@ import { useTheme } from '../../context/ThemeContext';
 
 function Conductores() {
   const { darkMode } = useTheme();
-  // Estados para datos
+
   const [conductores, setConductores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Estados para modales
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [documentosModalOpen, setDocumentosModalOpen] = useState(false);
   const [selectedConductorId, setSelectedConductorId] = useState(null);
   const [selectedConductorNombre, setSelectedConductorNombre] = useState('');
 
-  // Filtros y paginación con hook personalizado
+  // Filtros y paginación
   const {
     searchTerm,
     setSearchTerm,
@@ -45,7 +44,7 @@ function Conductores() {
     estado: ''
   }, 5);
 
-  // Configuración de filtros avanzados
+  // Configuración de filtros
   const filterConfig = [
     { name: 'dni', label: 'DNI' },
     { name: 'nombre', label: 'Nombre' },
@@ -54,7 +53,6 @@ function Conductores() {
     { name: 'estado', label: 'Estado' }
   ];
   
-  // Obtener datos de conductores
   const fetchConductores = async () => {
     try {
       setLoading(true);
@@ -75,7 +73,6 @@ function Conductores() {
     fetchConductores();
   }, []);
 
-  // Formatear datos para la tabla
   const conductoresData = useMemo(() => {
     return conductores.map(conductor => {
       return {
@@ -132,7 +129,6 @@ function Conductores() {
   const filteredConductores = filteredData(conductoresData);
   const { paginatedData: currentConductores, totalPaginas, totalItems } = paginateData(filteredConductores);
 
-  // Handlers
   const handleNewConductorClick = () => {
     setSelectedConductorId(null);
     setEditModalOpen(true);

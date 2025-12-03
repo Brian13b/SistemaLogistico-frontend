@@ -58,7 +58,6 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
                     setError(null);
                     showSuccess("Datos del conductor cargados correctamente");
                 } catch (err) {
-                    console.error("Error al cargar datos:", err);
                     setError("Error al cargar los datos del conductor.");
                     showError("Error al cargar los datos del conductor");
                 } finally {
@@ -106,7 +105,6 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
             }
             onClose();
         } catch (err) {
-            console.error("Error en submit:", err);
             const errorMessage = err.response?.data?.message || "Error al guardar el conductor";
             setError(errorMessage);
             showError(errorMessage);

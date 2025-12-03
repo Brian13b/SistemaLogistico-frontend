@@ -85,7 +85,6 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
     setError(null);
 
     try {
-      // Crear FormData para enviar datos y archivo
       const uploadData = new FormData();
       uploadData.append("documento_data", JSON.stringify(formData));
       uploadData.append("archivo", file);
@@ -94,7 +93,6 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
 
       setUploading(false);
 
-      // Resetear formulario
       setFormData({
         codigo_documento: "",
         id_vehiculo: vehiculoId,
@@ -105,7 +103,6 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
       });
       setFile(null);
 
-      // Actualizar lista de documentos
       fetchDocumentos();
     } catch (error) {
       setUploading(false);
@@ -128,7 +125,7 @@ function VehiculoDocumentosModal({ isOpen, onClose, vehiculoId, darkMode }) {
       const documento = documentos.find((doc) => doc.id === documentoId);
       const filename = documento ? documento.archivo : "documento.pdf";
 
-      // Crear elemento <a> para descargar el archivo
+      // Descargar el archivo
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", filename);

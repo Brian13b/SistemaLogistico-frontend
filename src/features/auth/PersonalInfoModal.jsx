@@ -157,7 +157,7 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser, darkMode }) =>
                         </div>
                         
                         <div className="mb-4">
-                            <label className="block mb-2 flex items-center">
+                            <label className="mb-2 flex items-center">
                                 <FaEnvelope className="mr-2" /> Correo Electrónico
                             </label>
                             <input
@@ -172,7 +172,7 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser, darkMode }) =>
                         </div>
                         
                         <div className="mb-4">
-                            <label className="block mb-2 flex items-center">
+                            <label className="mb-2 flex items-center">
                                 <FaKey className="mr-2" /> Contraseña Actual
                             </label>
                             <input
@@ -196,7 +196,7 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser, darkMode }) =>
                         </div>
                         
                         <div className="mb-4">
-                            <label className="block mb-2 flex items-center">
+                            <label className="mb-2 flex items-center">
                                 <FaKey className="mr-2" /> Nueva Contraseña
                             </label>
                             <input 
@@ -213,7 +213,7 @@ const PersonalInfoModal = ({ isOpen, onClose, user, onUpdateUser, darkMode }) =>
                         </div>
                         
                         <div className="mb-4">
-                            <label className="block mb-2 flex items-center">
+                            <label className="mb-2 flex items-center">
                                 <FaKey className="mr-2" /> Confirmar Nueva Contraseña
                             </label>
                             <input 

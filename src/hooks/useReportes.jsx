@@ -39,7 +39,6 @@ export const useReportes = () => {
     setError(null);
 
     try {
-      // 1. Llamada al Backend (Dashboard + Listas para filtros)
       const [dashboardRes, vehiculosRes, conductoresRes] = await Promise.all([
           api.get(`/finanzas/dashboard?mes=${filtros.mes}&anio=${filtros.anio}`),
           vehiculosService.getAll(),
@@ -48,9 +47,7 @@ export const useReportes = () => {
 
       const backendData = dashboardRes.data;
 
-      // 2. Transformación de Datos del Dashboard
-
-      // A. Métricas
+      // Métricas
       const metricasTransformadas = [
         {
           title: "Ingresos Totales",
@@ -82,14 +79,14 @@ export const useReportes = () => {
         }
       ];
 
-      // B. Gráfico Torta
+      // Gráfico Torta
       const gastosPorTipo = backendData.graficos.gastos_por_tipo.map((item, index) => ({
         nombre: item.nombre,
         valor: item.valor,
         color: COLORS[index % COLORS.length]
       }));
 
-      // C. Tabla de Viajes
+      // Tabla de Viajes
       const viajesTransformados = backendData.viajes_tabla.map(viaje => ({
         id: viaje.id,
         patente: "Ver Detalle", 
@@ -103,7 +100,7 @@ export const useReportes = () => {
         estado: viaje.estado
       }));
 
-      // 3. Transformación de Listas para Filtros (Value/Label)
+      // Listas para Filtros 
       const opcionesVehiculos = [
           { value: 'all-vehicles', label: 'Todos los vehículos' },
           ...(vehiculosRes.data || []).map(v => ({ 
@@ -120,7 +117,6 @@ export const useReportes = () => {
           }))
       ];
 
-      // 4. Actualizar Estado
       setDatos({
         metricas: metricasTransformadas,
         ingresosGastos: backendData.graficos.ingresos_gastos,

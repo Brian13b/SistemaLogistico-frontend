@@ -10,7 +10,7 @@ const procesar = (docs, tipoEntidad) => docs.map(doc => {
   if (diffDias < 0 || diffDias > 30) return null;
   return {
     tipo: doc.tipo_documento,
-    fecha: fechaVenc.toISOString(), // Convertir a string serializable
+    fecha: fechaVenc.toISOString(), 
     descripcion: doc.archivo_nombre,
     entidad: tipoEntidad,
     vehiculo: doc.id_vehiculo,

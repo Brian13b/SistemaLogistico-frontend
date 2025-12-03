@@ -42,7 +42,7 @@ const useConfirmDialog = () => {
         await dialog.onConfirm();
         hideDialog();
       } catch (error) {
-        console.error('Error in confirm action:', error);
+        console.error('Error en la confirmación:', error);
         setLoading(false);
       }
     }

@@ -16,7 +16,6 @@ const Select = ({
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
 
-  // Usar el valor controlado si está disponible, sino el valor interno
   const selectedValue = value !== undefined ? value : defaultValue;
 
   useEffect(() => {

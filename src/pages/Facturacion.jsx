@@ -24,7 +24,6 @@ export default function Facturacion() {
       setFacturas(response.data || []);
     } catch (error) {
       console.error('Error al cargar facturas:', error);
-      // No mostrar error si el servicio no está disponible
     } finally {
       setLoadingFacturas(false);
     }
@@ -37,7 +36,7 @@ export default function Facturacion() {
   const handleCloseModal = (facturaEmitida) => {
     setShowFormModal(false);
     if (facturaEmitida) {
-      cargarFacturas(); // Recargar lista de facturas
+      cargarFacturas(); 
     }
   };
 

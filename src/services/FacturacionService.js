@@ -22,7 +22,6 @@ facturacionApi.interceptors.request.use((config) => {
 });
 
 export const facturacionService = {
-  // --- OPERACIONES PRINCIPALES ---
   emitirFactura: (data) => facturacionApi.post('/emitir', data),
   
   listarFacturas: (params = {}) => {
@@ -36,7 +35,6 @@ export const facturacionService = {
   
   consultarFactura: (data) => facturacionApi.post('/consultar', data),
   
-  // --- PARÁMETROS AFIP ---
   obtenerTiposComprobante: () => facturacionApi.get('/parametros/tipos-comprobante'),
   obtenerPuntosVenta: () => facturacionApi.get('/parametros/puntos-venta'),
   obtenerTiposDocumento: () => facturacionApi.get('/parametros/tipos-documento'),
@@ -44,17 +42,12 @@ export const facturacionService = {
   obtenerTiposConcepto: () => facturacionApi.get('/parametros/tipos-concepto'),
   obtenerCondicionesIvaReceptor: () => facturacionApi.get('/parametros/condiciones-iva-receptor'),
   
-  // --- UTILIDADES Y ESTADO ---
   estadoServidores: () => facturacionApi.get('/estado/servidores'),
 
-  // Obtener cotización
   obtenerCotizacion: (monedaId) => facturacionApi.get(`/parametros/cotizacion/${monedaId}`),
 
-  // Verificar sincronización
-  obtenerUltimoComprobante: (ptoVta, tipoCbte) => 
-      facturacionApi.get(`/ultimo-comprobante/${ptoVta}/${tipoCbte}`),
+  obtenerUltimoComprobante: (ptoVta, tipoCbte) => facturacionApi.get(`/ultimo-comprobante/${ptoVta}/${tipoCbte}`),
 
-  // Descargar PDF
   descargarFactura: async (id, numero) => {
         try {
             const response = await facturacionApi.get(`/${id}/pdf`, {

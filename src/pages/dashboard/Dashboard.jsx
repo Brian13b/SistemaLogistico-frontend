@@ -19,13 +19,12 @@ export default function Dashboard({ userRole }) {
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.app.loading);
   
-  // Selectores de datos
+  // Selectores
   const vehiculos = useSelector((state) => state.vehiculos.items);
   const conductores = useSelector((state) => state.conductores.items);
   const viajes = useSelector((state) => state.viajes.items);
   const vencimientos = useSelector((state) => state.vencimientos.items);
   
-  // Selectores de estado
   const vehiculosStatus = useSelector((state) => state.vehiculos.status);
   const conductoresStatus = useSelector((state) => state.conductores.status);
   const viajesStatus = useSelector((state) => state.viajes.status);
@@ -36,14 +35,11 @@ export default function Dashboard({ userRole }) {
   const viajesError = useSelector((state) => state.viajes.error);
   const vencimientosError = useSelector((state) => state.vencimientos.error);
   
-  // Actividades recientes desde Redux
   const actividadReciente = useSelector(selectRecentActivities);
   const [showActivitiesModal, setShowActivitiesModal] = useState(false);
-  
-  // Confirm Dialog
+
   const confirmDialog = useConfirmDialog();
 
-  // Función para obtener icono de actividad
   const getActivityIcon = (type) => {
     const iconMap = {
       vehiculo_creado: FaTruck,
@@ -63,7 +59,6 @@ export default function Dashboard({ userRole }) {
     return iconMap[type] || FaCheckCircle;
   };
 
-  // Función para obtener color de actividad
   const getActivityColor = (type) => {
     if (type.includes('creado')) return 'green';
     if (type.includes('actualizado')) return 'blue';
@@ -73,7 +68,6 @@ export default function Dashboard({ userRole }) {
     return 'gray';
   };
 
-  // Función para formatear tiempo relativo
   const getRelativeTime = (timestamp) => {
     const now = new Date();
     const activityDate = new Date(timestamp);
@@ -102,7 +96,6 @@ export default function Dashboard({ userRole }) {
     
   }, [dispatch]);
 
-  // Función para reintentar carga
   const handleRetry = () => {
     confirmDialog.showDialog({
       title: 'Recargar datos',
@@ -129,7 +122,6 @@ export default function Dashboard({ userRole }) {
 
   const formatDate = (date) => {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    // Manejar tanto strings ISO como objetos Date
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     return dateObj.toLocaleDateString('es-AR', options);
   };

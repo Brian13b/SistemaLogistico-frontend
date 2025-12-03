@@ -7,8 +7,6 @@ export default function GastoFormModal({ isOpen, onClose }) {
   const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(false);
   const [archivo, setArchivo] = useState(null);
-  
-  // Listas para selects
   const [vehiculos, setVehiculos] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -76,7 +74,7 @@ export default function GastoFormModal({ isOpen, onClose }) {
             </select>
           </div>
 
-          {/* Vehículo (Opcional pero recomendado para combustible) */}
+          {/* Vehículo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehículo Asociado</label>
             <select 
@@ -128,7 +126,7 @@ export default function GastoFormModal({ isOpen, onClose }) {
             />
           </div>
 
-          {/* SUBIDA DE COMPROBANTE (El nuevo input) */}
+          {/* Comprobante */}
           <div className="border-t pt-4 mt-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Comprobante (Foto/PDF)

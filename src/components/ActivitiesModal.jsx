@@ -20,7 +20,6 @@ export default function ActivitiesModal({ isOpen, onClose, darkMode }) {
   
   const confirmDialog = useConfirmDialog();
 
-  // Aplicar filtros cuando cambien
   useEffect(() => {
     dispatch(setFilters(localFilters));
   }, [localFilters, dispatch]);

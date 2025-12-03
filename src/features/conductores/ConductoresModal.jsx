@@ -62,7 +62,6 @@ function ConductorModal({ isOpen, onClose, conductorId, darkMode }) {
         minute: '2-digit'
       });
     } catch (error) {
-      console.error('Error formatting date:', error);
       return 'Error en fecha';
     }
   };
@@ -112,7 +111,7 @@ function ConductorModal({ isOpen, onClose, conductorId, darkMode }) {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Estado</p>
                   <span className={`px-2 py-1 rounded text-sm ${
-                    (conductor.estado === 'Activo') 
+                    (conductor.estado === 'Activo' || conductor.estado === 'ACTIVO') 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-red-100 text-red-800'
                   }`}>
@@ -144,22 +143,6 @@ function ConductorModal({ isOpen, onClose, conductorId, darkMode }) {
               </div>
             </div>
           </div>
-          
-          {/* Licencia 
-          <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-            <h3 className="text-lg font-semibold mb-3">Información de Licencia</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Número de Licencia</p>
-                <p>{conductor.numero_licencia || 'No especificado'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Fecha Vencimiento</p>
-                <p>{formatDate()}</p>
-              </div>
-            </div>
-          </div>
-          */}
 
           {/* Documentos */}
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
@@ -205,7 +188,7 @@ function ConductorModal({ isOpen, onClose, conductorId, darkMode }) {
             )}
           </div>
           
-          {/* Botones de acción */}
+          {/* Botones */}
           <div className="flex justify-end space-x-4 mt-6">
             <button 
               onClick={handleGeneratePDF}

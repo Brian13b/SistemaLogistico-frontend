@@ -45,7 +45,7 @@ function Seguimiento() {
     <div className={`flex flex-col h-full p-2 space-y-2 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}>
       <div className="flex flex-1 space-x-2 h-full w-full">
         
-        {/* --- MAPA --- */}
+        {/* Mapa */}
         <div className={`flex-1 rounded-lg shadow border overflow-hidden ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'} h-full w-full`}>
           <MapContainer
             center={[-32.94, -60.63]}
@@ -82,7 +82,7 @@ function Seguimiento() {
           </MapContainer>
         </div>
 
-        {/* --- LISTA LATERAL --- */}
+        {/* Lista Lateral */}
         <div className={`w-80 rounded-lg shadow border overflow-y-auto ${darkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-gray-100 text-gray-800 border-gray-300'}`}>
           <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-400'}`}>
             <h2 className="text-lg font-bold">Vehiculos ({flota.length})</h2>
@@ -115,7 +115,7 @@ function Seguimiento() {
         </div>
       </div>
 
-      {/* --- PANEL DE DETALLES INFERIOR --- */}
+      {/* Panel desplegable inferior */}
       {vehiculoActivo && (
         <div className={`h-[50%] rounded-lg shadow border px-6 py-4 overflow-y-auto ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}>
           <div className="flex justify-between items-start mb-4">
