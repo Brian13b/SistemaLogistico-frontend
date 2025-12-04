@@ -6,23 +6,28 @@ import { conductoresService } from '../services/ConductoresService';
 import { viajesService } from '../services/ViajesService';
 import GastoFormModal from '../features/finanzas/GastoFormModal';
 import IngresoFormModal from '../features/finanzas/IngresoFormModal';
-import { FaPlus, FaMinus, FaFileInvoice, FaFilter, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { Pagination } from '../components/common/Paginacion'; 
+import { 
+  FaPlus, FaMinus, FaFileInvoice, FaSearch, FaFilter, FaChevronDown, FaChevronUp 
+} from 'react-icons/fa';
 
 export default function Finanzas() {
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [movimientos, setMovimientos] = useState([]);
+  
   const [vehiculos, setVehiculos] = useState([]);
   const [conductores, setConductores] = useState([]);
   const [viajes, setViajes] = useState([]);
 
+  const [showFilters, setShowFilters] = useState(false); // <--- Nuevo estado para colapsar
   const [filtros, setFiltros] = useState({
     fechaDesde: '',
     fechaHasta: '',
     vehiculo: '',
     conductor: '',
     viaje: '',
-    busqueda: '' 
+    busqueda: ''
   });
 
   const [paginaActual, setPaginaActual] = useState(1);
@@ -88,14 +93,11 @@ export default function Finanzas() {
         const descripcion = (mov.nombre || mov.descripcion || '').toLowerCase();
         if (!descripcion.includes(termino)) return false;
       }
-
       if (filtros.fechaDesde && new Date(mov.fecha) < new Date(filtros.fechaDesde)) return false;
       if (filtros.fechaHasta && new Date(mov.fecha) > new Date(filtros.fechaHasta)) return false;
-
       if (filtros.vehiculo && mov.vehiculo_id !== filtros.vehiculo) return false;
       if (filtros.conductor && mov.conductor_id !== filtros.conductor) return false;
-      if (filtros.viaje && mov.viaje_id !== filtros.viaje) return false;
-
+      
       return true;
     });
   }, [movimientos, filtros]);
@@ -104,8 +106,6 @@ export default function Finanzas() {
   const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
   const itemsActuales = movimientosFiltrados.slice(indicePrimerItem, indiceUltimoItem);
   const totalPaginas = Math.ceil(movimientosFiltrados.length / itemsPorPagina);
-
-  const cambiarPagina = (numero) => setPaginaActual(numero);
 
   const handleFiltroChange = (e) => {
     setFiltros({ ...filtros, [e.target.name]: e.target.value });
@@ -139,43 +139,71 @@ export default function Finanzas() {
         </div>
       </div>
 
-      {/* --- BARRA DE FILTROS --- */}
       <div className={`p-4 rounded-lg shadow-sm border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-gray-500 uppercase">
-            <FaFilter /> Filtros
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {/* Buscador */}
-            <div className="lg:col-span-2 relative">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full md:flex-1">
                 <input
                     type="text"
                     name="busqueda"
-                    placeholder="Buscar por descripción..."
+                    placeholder="Buscar por descripción, proveedor o detalle..."
                     value={filtros.busqueda}
                     onChange={handleFiltroChange}
-                    className={`w-full pl-9 pr-3 py-2 text-sm rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
+                    className={`w-full pl-10 pr-4 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                        darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900'
+                    }`}
                 />
-                <FaSearch className="absolute left-3 top-2.5 text-gray-400 text-xs" />
+                <FaSearch className="absolute left-3 top-3 text-gray-400" />
             </div>
 
-            {/* Fechas */}
-            <input type="date" name="fechaDesde" value={filtros.fechaDesde} onChange={handleFiltroChange} className={`text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`} />
-            <input type="date" name="fechaHasta" value={filtros.fechaHasta} onChange={handleFiltroChange} className={`text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`} />
-
-            {/* Selects */}
-            <select name="vehiculo" value={filtros.vehiculo} onChange={handleFiltroChange} className={`text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}>
-                <option value="">Todos los Vehículos</option>
-                {vehiculos.map(v => <option key={v.id} value={v.id}>{v.patente} - {v.modelo}</option>)}
-            </select>
-
-            <select name="conductor" value={filtros.conductor} onChange={handleFiltroChange} className={`text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}>
-                <option value="">Todos los Conductores</option>
-                {conductores.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.apellido}</option>)}
-            </select>
+            <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    showFilters 
+                        ? (darkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-700')
+                        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+                }`}
+            >
+                <FaFilter className="text-xs" />
+                Filtros Avanzados
+                {showFilters ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
+            </button>
         </div>
+
+        {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in">
+                <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Desde</label>
+                    <input type="date" name="fechaDesde" value={filtros.fechaDesde} onChange={handleFiltroChange} className={`w-full text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`} />
+                </div>
+                <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Hasta</label>
+                    <input type="date" name="fechaHasta" value={filtros.fechaHasta} onChange={handleFiltroChange} className={`w-full text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`} />
+                </div>
+                <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Vehículo</label>
+                    <select name="vehiculo" value={filtros.vehiculo} onChange={handleFiltroChange} className={`w-full text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}>
+                        <option value="">Todos</option>
+                        {vehiculos.map(v => <option key={v.id} value={v.id}>{v.patente}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Conductor</label>
+                    <select name="conductor" value={filtros.conductor} onChange={handleFiltroChange} className={`w-full text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}>
+                        <option value="">Todos</option>
+                        {conductores.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.apellido}</option>)}
+                    </select>
+                </div>
+                <div>
+                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Viaje</label>
+                  <select name="viaje" value={filtros.viaje} onChange={handleFiltroChange} className={`w-full text-sm rounded border px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}>
+                    <option value="">Todos</option>
+                    {viajes.map(v => <option key={v.id} value={v.id}>{v.numero}</option>)}
+                  </select>
+                </div>
+            </div>
+        )}
       </div>
 
-      {/* --- TABLA DE MOVIMIENTOS --- */}
       <div className={`rounded-lg overflow-hidden shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <div className="overflow-x-auto">
             <table className="w-full">
@@ -235,44 +263,18 @@ export default function Finanzas() {
             </table>
         </div>
         
-        {/* --- PAGINADOR --- */}
-        <div className={`px-6 py-3 flex items-center justify-between border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <div className="text-sm text-gray-500">
-                Mostrando <span className="font-medium">{indicePrimerItem + 1}</span> a <span className="font-medium">{Math.min(indiceUltimoItem, movimientosFiltrados.length)}</span> de <span className="font-medium">{movimientosFiltrados.length}</span> resultados
-            </div>
-            <div className="flex gap-2">
-                <button
-                    onClick={() => cambiarPagina(paginaActual - 1)}
-                    disabled={paginaActual === 1}
-                    className={`p-2 rounded ${darkMode ? 'hover:bg-gray-700 disabled:text-gray-600' : 'hover:bg-gray-100 disabled:text-gray-300'}`}
-                >
-                    <FaChevronLeft size={14} />
-                </button>
-                {Array.from({ length: totalPaginas }).map((_, idx) => (
-                     <button
-                        key={idx}
-                        onClick={() => cambiarPagina(idx + 1)}
-                        className={`w-8 h-8 flex items-center justify-center rounded text-sm ${
-                            paginaActual === idx + 1
-                                ? 'bg-blue-600 text-white'
-                                : darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
-                        }`}
-                     >
-                        {idx + 1}
-                     </button>
-                ))}
-                <button
-                    onClick={() => cambiarPagina(paginaActual + 1)}
-                    disabled={paginaActual === totalPaginas}
-                    className={`p-2 rounded ${darkMode ? 'hover:bg-gray-700 disabled:text-gray-600' : 'hover:bg-gray-100 disabled:text-gray-300'}`}
-                >
-                    <FaChevronRight size={14} />
-                </button>
-            </div>
-        </div>
+        {movimientosFiltrados.length > 0 && (
+            <Pagination 
+                paginaActual={paginaActual}
+                totalPaginas={totalPaginas}
+                onPageChange={setPaginaActual}
+                totalItems={movimientosFiltrados.length}
+                currentItems={itemsActuales}
+            />
+        )}
       </div>
 
-      {/* Modales de Carga */}
+      {/* Modales */}
       <GastoFormModal 
         isOpen={modalGastoOpen} 
         onClose={(refresh) => {
