@@ -43,12 +43,12 @@ function Seguimiento() {
 
   return (
     <div className={`flex flex-col h-full p-2 space-y-2 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}>
-      <div className="flex flex-1 space-x-2 h-full w-full">
+      <div className="flex flex-col md:flex-row flex-1 md:space-x-2 space-y-2 md:space-y-0 h-full w-full overflow-hidden">
         
         {/* Mapa */}
-        <div className={`flex-1 rounded-lg shadow border overflow-hidden ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'} h-full w-full`}>
+        <div className={`flex-1 rounded-lg shadow border overflow-hidden ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'} relative min-h-[300px]`}>
           <MapContainer
-            center={[-32.94, -60.63]}
+            center={[-32.94, -60.63]} 
             zoom={10}
             className="h-full w-full z-0"
             whenCreated={(map) => { mapRef.current = map; }}
@@ -72,8 +72,7 @@ function Seguimiento() {
                 >
                   <Tooltip direction="top" offset={[0, -10]} opacity={1}>
                     <div className="text-sm font-bold">
-                      {vehiculo.patente} <br/>
-                      <span className="font-normal">{vehiculo.conductorNombre}</span>
+                      {vehiculo.patente}
                     </div>
                   </Tooltip>
                 </Marker>
@@ -83,9 +82,9 @@ function Seguimiento() {
         </div>
 
         {/* Lista Lateral */}
-        <div className={`w-80 rounded-lg shadow border overflow-y-auto ${darkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-gray-100 text-gray-800 border-gray-300'}`}>
-          <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-400'}`}>
-            <h2 className="text-lg font-bold">Vehiculos ({flota.length})</h2>
+        <div className={`w-full md:w-80 h-48 md:h-full rounded-lg shadow border overflow-y-auto ${darkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-gray-100 text-gray-800 border-gray-300'}`}>
+          <div className={`p-4 border-b sticky top-0 z-10 ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-400 bg-gray-100'}`}>
+            <h2 className="text-lg font-bold">Flota ({flota.length})</h2>
           </div>
 
           <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
@@ -102,13 +101,12 @@ function Seguimiento() {
                 <div className="flex justify-between items-center">
                   <span className="font-bold">{vehiculo.patente}</span>
                   {vehiculo.estadoTracking === 'ONLINE' ? (
-                    <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">ONLINE</span>
+                    <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">ON</span>
                   ) : (
-                    <span className="text-xs bg-gray-500 text-white px-2 py-0.5 rounded-full">OFFLINE</span>
+                    <span className="text-xs bg-gray-500 text-white px-2 py-0.5 rounded-full">OFF</span>
                   )}
                 </div>
-                <p className="text-sm opacity-80">{vehiculo.marca} {vehiculo.modelo}</p>
-                <p className="text-xs mt-1">👤 {vehiculo.conductorNombre}</p>
+                <p className="text-sm opacity-80 truncate">{vehiculo.marca} {vehiculo.modelo}</p>
               </div>
             ))}
           </div>
@@ -117,22 +115,22 @@ function Seguimiento() {
 
       {/* Panel desplegable inferior */}
       {vehiculoActivo && (
-        <div className={`h-[50%] rounded-lg shadow border px-6 py-4 overflow-y-auto ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}>
+        <div className={`h-auto max-h-[40vh] md:h-[30%] rounded-lg shadow border px-6 py-4 overflow-y-auto ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}>
           <div className="flex justify-between items-start mb-4">
             <div>
               <h2 className="text-2xl font-bold">{vehiculoActivo.patente}</h2>
               <p className="text-lg opacity-75">{vehiculoActivo.marca} {vehiculoActivo.modelo}</p>
             </div>
-            <div className="text-right">
+            <div className="text-right hidden sm:block">
               <div className="text-sm opacity-60">Conductor</div>
               <div className="text-xl font-semibold">{vehiculoActivo.conductorNombre}</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             {/* Datos de GPS */}
             <div className={`p-3 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-              <h4 className="text-xs uppercase tracking-wider opacity-60 mb-2">Telemetría</h4>
+              <h4 className="text-xs uppercase tracking-wider opacity-60 mb-2">Datos</h4>
               {vehiculoActivo.ubicacion ? (
                 <div className="space-y-1">
                   <p>📡 <strong>Velocidad:</strong> {vehiculoActivo.ubicacion.velocidad} km/h</p>

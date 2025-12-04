@@ -45,10 +45,6 @@ export const authService = {
 
       const decodedToken = jwtDecode(response.data.access_token);
       const userRole = decodedToken.role.toUpperCase();
-   
-      console.log("Respuesta del servidor:", response.data);
-      console.log("Token decodificado:", decodedToken);
-      console.log("Rol del usuario:", userRole);
 
       localStorage.setItem('access_token', response.data.access_token);
       localStorage.setItem('user_role', userRole);
