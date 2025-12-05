@@ -11,7 +11,7 @@ import { Pagination } from '../components/common/Paginacion';
 import { useTableControls } from '../hooks/useTableControls';
 import { FaPlus, FaMinus, FaFileInvoice, FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 
-function Finanzas() {
+export default function Finanzas() {
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
