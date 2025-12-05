@@ -150,7 +150,7 @@ function Viajes() {
           </div>
         )
       };
-    }).sort((a, b) => a.id - b.id);
+    }).sort((a, b) => b.id - a.id);
   }, [viajes, conductores, vehiculos, darkMode]);
 
   const filteredViajes = filteredData(viajesData);
