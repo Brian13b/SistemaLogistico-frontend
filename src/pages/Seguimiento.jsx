@@ -82,7 +82,7 @@ function Seguimiento() {
                       <span className="text-gray-600">{vehiculo.marca} {vehiculo.modelo}</span><br/>
                       <hr className="my-1 border-gray-300"/>
                       👤 {vehiculo.conductorNombre}<br/>
-                      🚀 {vehiculo.ubicacion.speed?.toFixed(1)} km/h<br/>
+                      🚀 {vehiculo.ubicacion.velocidad?.toFixed(1)} km/h<br/>
                       📡 {vehiculo.estadoTracking}
                     </div>
                   </Tooltip>
@@ -134,8 +134,8 @@ function Seguimiento() {
              {/* Datos GPS */}
              <div className={`p-3 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                 <h4 className="text-xs uppercase tracking-wider opacity-60 mb-2 font-bold">Telemetría</h4>
-                <p>🚀 {vehiculoActivo.ubicacion?.speed?.toFixed(1) || 0} km/h</p>
-                <p>🧭 {obtenerRumbo(vehiculoActivo.ubicacion?.course)}</p> 
+                <p>🚀 {vehiculoActivo.ubicacion?.velocidad?.toFixed(1) || 0} km/h</p>
+                <p>🧭 {obtenerRumbo(vehiculoActivo.ubicacion?.rumbo)}</p> 
                 <p>📡 {vehiculoActivo.ubicacion ? new Date(vehiculoActivo.ubicacion.timestamp).toLocaleTimeString() : '-'}</p>
              </div>
              
