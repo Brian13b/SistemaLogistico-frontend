@@ -72,7 +72,7 @@ function Seguimiento() {
               vehiculo.ubicacion && (
                 <Marker
                   key={vehiculo.id}
-                  position={[vehiculo.ubicacion.lat, vehiculo.ubicacion.lng]}
+                  position={[vehiculo.ubicacion.latitud, vehiculo.ubicacion.longitud]}
                   icon={crearIconoVehiculo(vehiculo.enMovimiento)}
                   eventHandlers={{click: () => seleccionarVehiculo(vehiculo.id)}}
                 >
