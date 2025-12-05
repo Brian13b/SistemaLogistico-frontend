@@ -147,16 +147,42 @@ export const useReportes = () => {
   };
 
   const exportarReporte = async (formato) => {
-    console.log("Exportar pendiente:", formato);
+    if (formato === 'csv') {
+      try {
+        const headers = ["ID", "Patente", "Conductor", "Origen", "Destino", "Fecha", "Estado", "Costo"];
+        
+        const rows = datos.viajes.map(v => [
+          v.id,
+          v.patente,
+          v.conductor,
+          v.origen,
+          v.destino,
+          new Date(v.fecha).toLocaleDateString('es-AR'),
+          v.estado,
+          v.costo
+        ]);
+
+        const csvContent = [
+          headers.join(","),
+          ...rows.map(e => e.join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `reporte_viajes_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+      } catch (e) {
+        console.error("Error exportando:", e);
+      }
+    } else {
+      console.log("Formato no soportado aún:", formato);
+    }
   };
 
-  return {
-    datos,
-    filtros,
-    loading,
-    error,
-    aplicarFiltros,
-    exportarReporte,
-    cargarDatos
-  };
+  return { datos, filtros, loading, error, aplicarFiltros, exportarReporte, cargarDatos };
 };
