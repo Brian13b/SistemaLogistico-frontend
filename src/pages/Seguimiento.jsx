@@ -17,8 +17,8 @@ function Seguimiento() {
 
   const obtenerRumbo = (grados) => {
     if (grados === undefined || grados === null) return 'Desc.';
-    const val = Math.floor((grados / 22.5) + 0.5);
-    const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"];
+    const val = Math.floor((grados / 45) + 0.5);
+    const arr = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
     return `${grados}° ${arr[(val % 16)]}`;
   };
 
