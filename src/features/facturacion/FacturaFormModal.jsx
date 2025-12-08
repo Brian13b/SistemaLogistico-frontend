@@ -212,7 +212,7 @@ export default function FacturaFormModal({ isOpen, onClose, viajeId = null, viaj
       let msg = "Error al emitir";
       if (error.response?.data?.detail) {
         const d = error.response.data.detail;
-        msg = Array.isArray(d) ? d.map(x => x.msg).join(', ') : str(d);
+        msg = Array.isArray(d) ? d.map(x => x.msg).join(', ') : String(d);
       }
       showError(msg);
     } finally {
