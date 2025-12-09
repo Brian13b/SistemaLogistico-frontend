@@ -158,7 +158,7 @@ function Seguimiento() {
             {flota.map((vehiculo) => (
               <div
                 key={vehiculo.id}
-                className={`p-4 cursor-pointer transition-colors ${vehiculoSeleccionadoId === vehiculo.id ? 'bg-blue-600 text-white' : darkMode ? 'bg-yellow-500 text-gray-900 hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                className={`p-4 cursor-pointer transition-colors ${vehiculoSeleccionadoId === vehiculo.id ? 'bg-blue-600 text-white dark:bg-yellow-500 dark:text-gray-900' : darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                 onClick={() => seleccionarVehiculo(vehiculo.id)}
               >
                 <div className="flex justify-between items-center">
