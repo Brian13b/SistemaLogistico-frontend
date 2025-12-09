@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 export default function Direccion({ lat, lng }) {
   const [direccion, setDireccion] = useState('Cargando ubicación...');
 
