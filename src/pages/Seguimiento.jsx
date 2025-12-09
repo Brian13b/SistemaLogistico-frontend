@@ -85,7 +85,55 @@ function Seguimiento() {
                   eventHandlers={{click: () => seleccionarVehiculo(vehiculo.id)}}
                 >
                   <Tooltip direction="top" offset={[0, -15]} opacity={0.9}>
-                    <span className="font-bold">{vehiculo.patente}</span>
+                    <div className="min-w-[220px] p-1 font-sans text-gray-800">
+                      <div className="border-b-2 border-gray-200 pb-2 mb-2">
+                        <h3 className="text-lg font-bold text-blue-700 m-0 leading-tight">
+                          {vehiculo.patente}
+                        </h3>
+                        <span className="text-sm font-medium text-gray-500 uppercase">
+                          ({vehiculo.conductorNombre || 'Sin Conductor'})
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 mb-2">
+                        <div className="flex justify-between">
+                          <strong className="text-sm">Velocidad:</strong>
+                          <span className={`text-sm font-bold ${vehiculo.ubicacion.velocidad > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                            {vehiculo.ubicacion.velocidad?.toFixed(1) || 0} km/h
+                          </span>
+                        </div>
+                        
+                        <div className="text-sm">
+                          <strong>Ubicación:</strong>
+                          <div className="text-xs text-gray-500 mt-0.5 pl-1 bg-gray-50 rounded p-1">
+                            Lat: {vehiculo.ubicacion.latitud.toFixed(4)} <br/>
+                            Lng: {vehiculo.ubicacion.longitud.toFixed(4)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <hr className="border-gray-200 my-2" />
+
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <div className="flex justify-between">
+                          <strong>Ult. Reporte:</strong>
+                          <span>
+                            {new Date(vehiculo.ubicacion.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center mt-1">
+                          <strong>Ult. Movimiento:</strong>
+                          <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">
+                            {vehiculo.enMovimiento 
+                              ? 'Ahora mismo' 
+                              : (vehiculo.ultimo_movimiento 
+                                  ? new Date(vehiculo.ultimo_movimiento).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+                                  : '-')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </Tooltip>
                 </Marker>
               )
