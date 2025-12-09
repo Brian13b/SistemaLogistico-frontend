@@ -106,8 +106,10 @@ function Seguimiento() {
                         <div className="text-sm">
                           <strong>Ubicación:</strong>
                           <div className="text-xs text-gray-500 mt-0.5 pl-1 bg-gray-50 rounded p-1">
-                            Lat: {vehiculo.ubicacion.latitud.toFixed(4)} <br/>
-                            Lng: {vehiculo.ubicacion.longitud.toFixed(4)}
+                            <Direccion 
+                              lat={vehiculo.ubicacion.latitud} 
+                              lng={vehiculo.ubicacion.longitud} 
+                            />
                           </div>
                         </div>
                       </div>
