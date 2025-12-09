@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
 import FlyToVehiculo from '../components/FlyToVehiculo';
 import { useMapaFlota } from '../hooks/useMapaFlota';
+import Direccion from '../components/Direccion';
 
 function Seguimiento() {
   const { darkMode } = useTheme();
@@ -69,22 +70,69 @@ function Seguimiento() {
             )}
 
             {flota.map((vehiculo) => (
-              vehiculo.ubicacion && (
+              vehiculo.ubicacion && vehiculo.ubicacion.latitud && (
                 <Marker
                   key={vehiculo.id}
                   position={[vehiculo.ubicacion.latitud, vehiculo.ubicacion.longitud]}
                   icon={crearIconoVehiculo(vehiculo.enMovimiento)}
                   eventHandlers={{click: () => seleccionarVehiculo(vehiculo.id)}}
                 >
-                  <Tooltip direction="top" offset={[0, -15]} opacity={1}>
-                    <div className="text-sm text-gray-800">
-                      <strong className="text-base">{vehiculo.patente}</strong><br/>
-                      <span className="text-gray-600">{vehiculo.marca} {vehiculo.modelo}</span><br/>
-                      <hr className="my-1 border-gray-300"/>
-                      👤 {vehiculo.conductorNombre}<br/>
-                      🚀 {vehiculo.ubicacion.velocidad?.toFixed(1)} km/h<br/>
-                      📡 {vehiculo.estadoTracking}
+                  <Popup className="custom-popup">
+                    <div className="min-w-[220px] p-1 font-sans text-gray-800">
+                      <div className="border-b-2 border-gray-200 pb-2 mb-2">
+                        <h3 className="text-lg font-bold text-blue-700 m-0 leading-tight">
+                          {vehiculo.patente}
+                        </h3>
+                        <span className="text-sm font-medium text-gray-500 uppercase">
+                          ({vehiculo.conductorNombre || 'Sin Conductor'})
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 mb-2">
+                        <div className="flex justify-between">
+                          <strong className="text-sm">Velocidad:</strong>
+                          <span className={`text-sm font-bold ${vehiculo.ubicacion.velocidad > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                            {vehiculo.ubicacion.velocidad?.toFixed(1) || 0} km/h
+                          </span>
+                        </div>
+                        
+                        <div className="text-sm">
+                          <strong>Ubicación:</strong>
+                          <div className="text-xs text-gray-500 mt-0.5 pl-1 bg-gray-50 rounded p-1">
+                            <Direccion
+                              lat={vehiculo.ubicacion.latitud} 
+                              lng={vehiculo.ubicacion.longitud} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <hr className="border-gray-200 my-2" />
+
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <div className="flex justify-between">
+                          <strong>Ult. Reporte:</strong>
+                          <span>
+                            {new Date(vehiculo.ubicacion.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center mt-1">
+                          <strong>Ult. Movimiento:</strong>
+                          <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">
+                            {vehiculo.enMovimiento 
+                              ? 'Ahora mismo' 
+                              : (vehiculo.ultimo_movimiento 
+                                  ? new Date(vehiculo.ultimo_movimiento).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+                                  : '-')}
+                          </span>
+                        </div>
+                      </div>
                     </div>
+                  </Popup>
+
+                  <Tooltip direction="top" offset={[0, -15]} opacity={0.9}>
+                    <span className="font-bold">{vehiculo.patente}</span>
                   </Tooltip>
                 </Marker>
               )
