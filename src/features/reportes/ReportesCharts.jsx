@@ -60,6 +60,7 @@ export function ReportesCharts({ datos, loading }) {
               outerRadius={100}
               paddingAngle={5}
               dataKey="valor"
+              nameKey="nombre"
             >
               {datos.estadoVehiculos.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
