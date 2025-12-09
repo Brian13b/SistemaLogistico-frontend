@@ -3,7 +3,8 @@ import { useNotification } from '../context/NotificationContext';
 import { useState, useEffect } from 'react';
 import FacturaFormModal from '../features/facturacion/FacturaFormModal';
 import { facturacionService } from '../services/FacturacionService';
-import { FaFilePdf } from 'react-icons/fa';
+import { FaFilePdf, FaSearch, FaTimes } from 'react-icons/fa';
+import { Pagination } from '../components/common/Paginacion';
 
 export default function Facturacion() {
   const { darkMode } = useTheme();
@@ -12,6 +13,9 @@ export default function Facturacion() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [facturas, setFacturas] = useState([]);
   const [loadingFacturas, setLoadingFacturas] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 10;
 
   useEffect(() => {
     cargarFacturas();
@@ -20,13 +24,39 @@ export default function Facturacion() {
   const cargarFacturas = async () => {
     setLoadingFacturas(true);
     try {
-      const response = await facturacionService.listarFacturas({ limit: 20 });
+      const response = await facturacionService.listarFacturas({ limit: 1000 });
       setFacturas(response.data || []);
     } catch (error) {
       console.error('Error al cargar facturas:', error);
     } finally {
       setLoadingFacturas(false);
     }
+  };
+
+  const facturasFiltradas = useMemo(() => {
+    return facturas.filter(factura => {
+      if (!searchTerm) return true;
+      
+      const termino = searchTerm.toLowerCase();
+      const numeroCompleto = `${String(factura.punto_vta).padStart(4,'0')}-${String(factura.numero).padStart(8,'0')}`;
+      
+      return (
+        numeroCompleto.includes(termino) ||
+        factura.nro_doc.includes(termino) ||
+        (factura.cae && factura.cae.includes(termino)) ||
+        factura.imp_total.toString().includes(termino)
+      );
+    });
+  }, [facturas, searchTerm]);
+
+  const indiceUltimoItem = paginaActual * itemsPorPagina;
+  const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
+  const currentItems = facturasFiltradas.slice(indicePrimerItem, indiceUltimoItem);
+  const totalPaginas = Math.ceil(facturasFiltradas.length / itemsPorPagina);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPaginaActual(1); 
   };
 
   const handleGenerarFactura = () => {
@@ -186,9 +216,34 @@ export default function Facturacion() {
 
         {/* Historial de facturas */}
         <div className="mt-8">
-          <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Historial de Facturas
-          </h2>
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Historial de Facturas
+            </h2>
+            <div className={`relative w-full md:w-80 ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+                <FaSearch className={`absolute left-3 top-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <input
+                    type="text"
+                    placeholder="Buscar por número, CUIT o importe..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className={`w-full pl-10 pr-10 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                        darkMode 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-gray-50 border-gray-300 text-gray-900'
+                    }`}
+                />
+                {searchTerm && (
+                    <button 
+                        onClick={() => { setSearchTerm(''); setPaginaActual(1); }}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    >
+                        <FaTimes />
+                    </button>
+                )}
+            </div>
+          </div>
+
           {loadingFacturas ? (
             <div className="text-center py-8">
               <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Cargando facturas...</p>
@@ -200,85 +255,86 @@ export default function Facturacion() {
               </p>
             </div>
           ) : (
-            <div className={`overflow-x-auto rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <table className="w-full">
-                <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-100'}>
-                  <tr>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Número
-                    </th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Fecha
-                    </th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Cliente
-                    </th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Importe
-                    </th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      CAE
-                    </th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Estado
-                    </th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {facturas.map((factura) => (
-                    <tr
-                      key={factura.id}
-                      className={`border-t ${darkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`}
-                    >
-                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {formatearNumeroFactura(factura.tipo_cbte, factura.punto_vta, factura.numero)}
-                      </td>
-                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {formatearFecha(factura.fecha_cbte)}
-                      </td>
-                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {factura.nro_doc}
-                      </td>
-                      <td className={`px-4 py-3 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        ${factura.imp_total.toFixed(2)}
-                      </td>
-                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {factura.cae}
-                      </td>
-                      <td className={`px-4 py-3 text-sm`}>
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            factura.estado === 'A'
-                              ? darkMode
-                                ? 'bg-green-800 text-green-200'
-                                : 'bg-green-100 text-green-800'
-                              : darkMode
-                                ? 'bg-red-800 text-red-200'
-                                : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {factura.estado === 'A' ? 'Aprobada' : 'Rechazada'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {factura.estado === 'A' && (
-                          <button
-                            onClick={() => handleDescargarPdf(factura)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
-                            title="Descargar PDF"
-                          >
-                            <FaFilePdf size={20} />
-                          </button>
-                        )}
-                      </td>
+            <>
+              <div className={`overflow-x-auto rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <table className="w-full">
+                  <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-100'}>
+                    <tr>
+                      <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Número</th>
+                      <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Fecha</th>
+                      <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Cliente</th>
+                      <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Importe</th>
+                      <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>CAE</th>
+                      <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Estado</th>
+                      <th className={`px-4 py-3 text-left text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {currentItems.length > 0 ? (
+                        currentItems.map((factura) => (
+                        <tr
+                            key={factura.id}
+                            className={`border-t ${darkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`}
+                        >
+                            <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {formatearNumeroFactura(factura.tipo_cbte, factura.punto_vta, factura.numero)}
+                            </td>
+                            <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {formatearFecha(factura.fecha_cbte)}
+                            </td>
+                            <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {factura.nro_doc}
+                            </td>
+                            <td className={`px-4 py-3 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            ${factura.imp_total.toFixed(2)}
+                            </td>
+                            <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {factura.cae}
+                            </td>
+                            <td className={`px-4 py-3 text-sm`}>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                                factura.estado === 'A'
+                                ? darkMode ? 'bg-green-800 text-green-200' : 'bg-green-100 text-green-800'
+                                : darkMode ? 'bg-red-800 text-red-200' : 'bg-red-100 text-red-800'
+                            }`}>
+                                {factura.estado === 'A' ? 'Aprobada' : 'Rechazada'}
+                            </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                            {factura.estado === 'A' && (
+                                <button
+                                onClick={() => handleDescargarPdf(factura)}
+                                className="text-red-600 hover:text-red-800 transition-colors"
+                                title="Descargar PDF"
+                                >
+                                <FaFilePdf size={20} />
+                                </button>
+                            )}
+                            </td>
+                        </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="7" className={`px-4 py-8 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                No se encontraron facturas con esa búsqueda.
+                            </td>
+                        </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {facturasFiltradas.length > 0 && (
+                  <Pagination 
+                    paginaActual={paginaActual}
+                    totalPaginas={totalPaginas}
+                    onPageChange={setPaginaActual}
+                    darkMode={darkMode}
+                    totalItems={facturasFiltradas.length}
+                    currentItems={currentItems}
+                  />
+              )}
+            </>
           )}
         </div>
 

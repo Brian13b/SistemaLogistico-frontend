@@ -158,7 +158,7 @@ function Seguimiento() {
             {flota.map((vehiculo) => (
               <div
                 key={vehiculo.id}
-                className={`p-4 cursor-pointer transition-colors ${vehiculoSeleccionadoId === vehiculo.id ? 'bg-blue-600 text-white' : darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                className={`p-4 cursor-pointer transition-colors ${vehiculoSeleccionadoId === vehiculo.id ? 'bg-blue-600 text-white' : darkMode ? 'bg-yellow-500 text-gray-900 hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                 onClick={() => seleccionarVehiculo(vehiculo.id)}
               >
                 <div className="flex justify-between items-center">
@@ -184,13 +184,13 @@ function Seguimiento() {
             <FaTimes />
           </button>
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 mb-4 pr-8 border-b pb-2 border-gray-600/30">
-            <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <h2 className="text-2xl font-bold text-blue-600 dark:text-yellow-500">
               {vehiculoActivo.patente}
             </h2>
             <span className="text-lg font-semibold opacity-90">
               {vehiculoActivo.marca} {vehiculoActivo.modelo}
             </span>
-            <span className={`text-sm md:ml-auto px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 font-medium`}>
+            <span className={`text-sm md:ml-auto px-3 py-1 rounded-full font-medium`}>
               {vehiculoActivo.conductorNombre || 'Sin Conductor Asignado'}
             </span>
           </div>
@@ -205,13 +205,13 @@ function Seguimiento() {
                 </span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
-                <span className="opacity-70 flex items-center gap-2"><FaTachometerAlt /> Velocidad</span>
+                <span className="opacity-70 flex items-center gap-2">Velocidad</span>
                 <span className="font-bold text-green-500">
                   {vehiculoActivo.ubicacion?.velocidad?.toFixed(1) || 0} km/h
                 </span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
-                <span className="opacity-70 flex items-center gap-2"><FaMapMarkerAlt /> Ubicación</span>
+                <span className="opacity-70 flex items-center gap-2">Ubicación</span>
                 <span className="text-right truncate w-40">
                   <Direccion 
                     lat={vehiculoActivo.ubicacion?.latitud} 
@@ -220,7 +220,7 @@ function Seguimiento() {
                 </span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
-                <span className="opacity-70 flex items-center gap-2"><FaCompass /> Rumbo</span>
+                <span className="opacity-70 flex items-center gap-2">Rumbo</span>
                 <span>{obtenerRumbo(vehiculoActivo.ubicacion?.rumbo)}</span>
               </div>
             </div>
@@ -239,7 +239,7 @@ function Seguimiento() {
                 <span>90 km/h</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
-                <span className="opacity-70 flex items-center gap-2"><FaWeightHanging /> Tara</span>
+                <span className="opacity-70 flex items-center gap-2">Tara</span>
                 <span>{vehiculoActivo.tara || 0} kg</span>
               </div>
             </div>
@@ -247,7 +247,7 @@ function Seguimiento() {
             <div className="space-y-2">
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Estado</span>
-                <span className={`font-bold ${vehiculoActivo.estado === 'DISPONIBLE' ? 'text-green-500' : 'text-yellow-500'}`}>
+                <span className={`font-bold ${vehiculoActivo.estado === 'Activo' ? 'text-green-500' : 'text-red-500'}`}>
                   {vehiculoActivo.estado}
                 </span>
               </div>
@@ -256,11 +256,11 @@ function Seguimiento() {
                 <span>{vehiculoActivo.odometro_inicial?.toLocaleString() || 106780} km</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
-                <span className="opacity-70 flex items-center gap-2"><FaBatteryThreeQuarters /> Batería</span>
+                <span className="opacity-70 flex items-center gap-2">Batería</span>
                 <span>{vehiculoActivo.ubicacion?.voltaje_bateria || '24.5'} V</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
-                <span className="opacity-70 flex items-center gap-2"><FaThermometerHalf /> Temp. Motor</span>
+                <span className="opacity-70 flex items-center gap-2">Temp. Motor</span>
                 <span>{vehiculoActivo.ubicacion?.temperatura_motor || '85'}°C</span>
               </div>
             </div>
