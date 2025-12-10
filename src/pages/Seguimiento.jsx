@@ -158,7 +158,11 @@ function Seguimiento() {
             {flota.map((vehiculo) => (
               <div
                 key={vehiculo.id}
-                className={`p-4 cursor-pointer transition-colors ${vehiculoSeleccionadoId === vehiculo.id ? 'bg-blue-600 text-white dark:bg-yellow-500 dark:text-gray-900' : darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                className={`p-4 cursor-pointer transition-colors ${
+                  vehiculoSeleccionadoId === vehiculo.id
+                    ? (darkMode ? 'bg-yellow-500 text-gray-900' : 'bg-blue-600 text-white')
+                    : (darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200')
+                }`}
                 onClick={() => seleccionarVehiculo(vehiculo.id)}
               >
                 <div className="flex justify-between items-center">
@@ -184,7 +188,7 @@ function Seguimiento() {
             <FaTimes />
           </button>
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 mb-4 pr-8 border-b pb-2 border-gray-600/30">
-            <h2 className="text-2xl font-bold text-blue-600 dark:text-yellow-500">
+            <h2 className={`text-2xl font-bold ${darkMode ? 'text-yellow-500' : 'text-blue-700'}`}>
               {vehiculoActivo.patente}
             </h2>
             <span className="text-lg font-semibold opacity-90">
