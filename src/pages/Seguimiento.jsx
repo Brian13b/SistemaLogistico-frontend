@@ -236,11 +236,11 @@ function Seguimiento() {
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Motor / Comb.</span>
-                <span>{vehiculoActivo.tipo_motor || 'Diesel'}</span>
+                <span>{vehiculoActivo.vehiculoTrack?.tipo_motor || 'Diesel'}</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Límite Vel.</span>
-                <span>90 km/h</span>
+                <span>{vehiculoActivo.vehiculoTrack?.velocidad_maxima_permitida || '90'} km/h</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70 flex items-center gap-2">Tara</span>
@@ -257,7 +257,7 @@ function Seguimiento() {
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Odómetro</span>
-                <span>{vehiculoActivo.odometro_inicial?.toLocaleString() || 106780} km</span>
+                <span>{vehiculoActivo.vehiculoTrack?.odometro_inicial?.toLocaleString() || 106780} km</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70 flex items-center gap-2">Batería</span>
