@@ -1,6 +1,6 @@
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import FacturaFormModal from '../features/facturacion/FacturaFormModal';
 import { facturacionService } from '../services/FacturacionService';
 import { FaFilePdf, FaSearch, FaTimes } from 'react-icons/fa';
