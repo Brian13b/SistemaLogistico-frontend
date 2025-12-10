@@ -12,18 +12,18 @@ export const useMapaFlota = () => {
     try {
       if (isFirstLoad.current) setLoading(true);
 
-      const [vehiculosRes, trackerVehiculosRes, conductoresRes] = await Promise.all([
+      const [vehiculosRes, conductoresRes] = await Promise.all([
         vehiculosService.getAll(),
-        trackerService.obtenerVehiculos(),
         conductoresService.getAll()
       ]);
 
-      const vehiculos = vehiculosRes.data && trackerVehiculosRes.data || [];
+      const vehiculos = vehiculosRes.data || [];
       const conductores = conductoresRes.data || [];
 
       const flotaUnificada = await Promise.all(
         vehiculos.map(async (vehiculo) => {
           let ubicacion = null;
+          let vehiculoTrack = null;
           let estadoTracking = 'SIN_SEÑAL';
 
           try {
@@ -36,6 +36,15 @@ export const useMapaFlota = () => {
             estadoTracking = 'OFFLINE';
           }
 
+          try {
+            const trackVehiculoRes = await trackerService.obtenerVehiculoPorId(vehiculo.id);
+            if (trackVehiculoRes.data) {
+              vehiculoTrack = trackVehiculoRes.data;
+            }
+          } catch (err) {
+            console.log("Error al cargar los vehiculos del tracker:", err);
+          }
+
           const conductor = conductores.find(c => c.id === vehiculo.id_conductor); 
           const nombreConductor = conductor 
             ? `${conductor.nombre} ${conductor.apellido}` 
@@ -45,6 +54,7 @@ export const useMapaFlota = () => {
             ...vehiculo,
             conductorNombre: nombreConductor,
             ubicacion: ubicacion, 
+            vehiculoTrack: vehiculoTrack,
             estadoTracking: estadoTracking,
             enMovimiento: ubicacion ? ubicacion.velocidad > 5 : false
           };
