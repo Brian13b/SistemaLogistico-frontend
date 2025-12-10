@@ -205,7 +205,7 @@ function Seguimiento() {
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Fecha Reporte</span>
                 <span className="font-mono font-bold">
-                  {vehiculoActivo.ubicacion ? new Date(vehiculoActivo.ubicacion?.timestamp).toLocaleDatetimeString() : '-'}
+                  {vehiculoActivo.ubicacion ? new Date(vehiculoActivo.ubicacion?.timestamp).toLocaleDateString() : '-'}
                 </span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
