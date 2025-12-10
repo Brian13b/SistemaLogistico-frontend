@@ -40,6 +40,7 @@ export const useMapaFlota = () => {
             const trackVehiculoRes = await trackerService.obtenerVehiculoPorId(vehiculo.id);
             if (trackVehiculoRes.data) {
               vehiculoTrack = trackVehiculoRes.data;
+              console.log(vehiculoTrack.data);
             }
           } catch (err) {
             console.log("Error al cargar los vehiculos del tracker:", err);
