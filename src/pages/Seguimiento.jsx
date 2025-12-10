@@ -205,7 +205,7 @@ function Seguimiento() {
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Fecha Reporte</span>
                 <span className="font-mono font-bold">
-                  {vehiculoActivo.ubicacion ? new Date(vehiculoActivo.ubicacion.marca_tiempo).toLocaleTimeString() : '-'}
+                  {vehiculoActivo.ubicacion ? new Date(vehiculoActivo.ubicacion.marca_tiempo).toLocaleDateString() : '-'}
                 </span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
@@ -232,11 +232,11 @@ function Seguimiento() {
             <div className="space-y-2">
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Año</span>
-                <span>{vehiculoActivo.vehiculos?.anio || '-'}</span>
+                <span>{vehiculoActivo.anio || '-'}</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Motor / Comb.</span>
-                <span>{vehiculoActivo.vehiculos?.tipo_motor || 'Diesel'}</span>
+                <span>{vehiculoActivo.tipo_motor || 'Diesel'}</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Límite Vel.</span>
@@ -257,7 +257,7 @@ function Seguimiento() {
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70">Odómetro</span>
-                <span>{vehiculoActivo.vehiculos?.odometro_inicial?.toLocaleString() || 106780} km</span>
+                <span>{vehiculoActivo.odometro_inicial?.toLocaleString() || 106780} km</span>
               </div>
               <div className="flex justify-between border-b border-gray-500/20 pb-1">
                 <span className="opacity-70 flex items-center gap-2">Batería</span>
