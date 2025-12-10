@@ -12,12 +12,13 @@ export const useMapaFlota = () => {
     try {
       if (isFirstLoad.current) setLoading(true);
 
-      const [vehiculosRes, conductoresRes] = await Promise.all([
+      const [vehiculosRes, trackerVehiculosRes, conductoresRes] = await Promise.all([
         vehiculosService.getAll(),
+        trackerService.obtenerVehiculos(),
         conductoresService.getAll()
       ]);
 
-      const vehiculos = vehiculosRes.data || [];
+      const vehiculos = vehiculosRes.data && trackerVehiculosRes.data || [];
       const conductores = conductoresRes.data || [];
 
       const flotaUnificada = await Promise.all(
