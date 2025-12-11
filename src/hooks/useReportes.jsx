@@ -72,10 +72,10 @@ export const useReportes = () => {
         },
         {
             title: "Viajes del Mes",
-            value: backendData.viajes_tabla.length.toString(),
+            value: (backendData.metricas.total_viajes || 0).toString(),
             icon: "Users",
-            change: "Registrados",
-            trend: "up"
+            change: "Registrados en este periodo",
+            trend: "neutral"
         }
       ];
 

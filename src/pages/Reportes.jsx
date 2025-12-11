@@ -23,6 +23,7 @@ export default function Reportes() {
         </div>
       </div>
 
+      {/*
       <ReportesFilters 
         datos={datos} 
         filtros={filtros} 
@@ -30,6 +31,7 @@ export default function Reportes() {
         exportarReporte={exportarReporte} 
         loading={loading} 
       />
+      */}
       
       <ReportesOverview datos={datos} loading={loading} />
       
