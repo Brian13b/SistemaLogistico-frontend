@@ -125,7 +125,7 @@ function ConductorModal({ isOpen, onClose, conductorId, darkMode }) {
           {/* Información de contacto */}
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
             <div className="flex items-center gap-3 mb-3">
-              <FaUser className="text-blue-500" />
+              <FaUser className={`${darkMode ? 'text-yellow-500' : 'text-blue-500'}`}/>
               <h3 className="text-lg font-semibold">Información de Contacto</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +147,7 @@ function ConductorModal({ isOpen, onClose, conductorId, darkMode }) {
           {/* Documentos */}
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
             <div className="flex items-center gap-3 mb-3">
-              <FaFileAlt className="text-blue-500" />
+              <FaFileAlt className={`${darkMode ? 'text-yellow-500' : 'text-blue-500'}`}/>
               <h3 className="text-lg font-semibold">Documentos</h3>
             </div>
             {documentos && documentos.length > 0 ? (
