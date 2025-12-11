@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { vehiculosService } from '../../services/VehiculosService';
+import { conductoresService } from '../../services/ConductoresService'
 import { createVehiculo, updateVehiculo } from '../../store/vehiculosSlice';
 import Modal from '../../components/Modal';
 import { useNotification } from '../../context/NotificationContext';
@@ -8,6 +9,7 @@ import { useNotification } from '../../context/NotificationContext';
 function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
     const dispatch = useDispatch();
     const { showSuccess, showError, showWarning } = useNotification();
+    const [conductores, setConductores] = useState([]);
     const [vehiculo, setVehiculo] = useState({
         marca: '', 
         modelo: '',
@@ -26,56 +28,55 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if(!isOpen) {
-            setVehiculo({
-                marca: '', 
-                modelo: '',
-                patente: '',
-                codigo: '',
-                estado: '',
-                anio: 0,
-                tipo: '',
-                tara: 0,
-                carga_maxima: 0,
-                kilometraje: 0,
-                id_conductor: 0
-            });
-            setError(null);
-            return;
-        }
-
-        if(isOpen && vehiculoId) {
-            const fetchVehiculoData = async () => {
+        if (isOpen) {
+            const loadData = async () => {
+                setLoading(true);
                 try {
-                    setLoading(true);
-                    const response = await vehiculosService.getById(vehiculoId);
-                    const vehiculoData = response.data;
+                    const conductoresRes = await conductoresService.getAll();
+                    setConductores(conductoresRes.data || []);
 
-                    setVehiculo({
-                        ...vehiculoData,
-                        codigo: vehiculoData.codigo || `VC-${String(vehiculoId).padStart(3, '0')}`
-                    });
+                    if (vehiculoId) {
+                        const response = await vehiculosService.getById(vehiculoId);
+                        const vehiculoData = response.data;
 
+                        setVehiculo({
+                            ...vehiculoData,
+                            id_conductor: vehiculoData.id_conductor || 0,
+                            codigo: vehiculoData.codigo || `VC-${String(vehiculoId).padStart(3, '0')}`
+                        });
+                    } else {
+                        setVehiculo({
+                            marca: '', 
+                            modelo: '', 
+                            patente: '', 
+                            codigo: '', 
+                            estado: '',
+                            anio: 0, 
+                            tipo: '', 
+                            tara: 0, 
+                            carga_maxima: 0, 
+                            kilometraje: 0,
+                            id_conductor: 0
+                        });
+                    }
                     setError(null);
-                    showSuccess("Datos del vehículo cargados correctamente");
                 } catch (error) {
-                    console.log('Error al cargar los datos del vehículo', error);
-                    setError("Error al cargar los datos del vehículo");
-                    showError("Error al cargar los datos del vehículo");
+                    console.error('Error cargando datos:', error);
+                    setError("Error al cargar los datos necesarios.");
                 } finally {
                     setLoading(false);
                 }
-
             };
-            fetchVehiculoData();
+            loadData();
         }
     }, [isOpen, vehiculoId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        const valorFinal = name === 'id_conductor' ? parseInt(value) : value;
         setVehiculo({
             ...vehiculo,
-            [name]: value
+            [name]: valorFinal
         });
     };
 
@@ -91,20 +92,21 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
 
         try {
             setLoading(true);
+            const dataToSend = { ...vehiculo };
             if(vehiculoId) {
-                await dispatch(updateVehiculo({ id: vehiculoId, vehiculoData: vehiculo })).unwrap();
+                await dispatch(updateVehiculo({ id: vehiculoId, vehiculoData: dataToSend })).unwrap();
                 showSuccess("Vehículo actualizado correctamente");
             } else {
-                await dispatch(createVehiculo(vehiculo)).unwrap();
+                await dispatch(createVehiculo(dataToSend)).unwrap();
                 showSuccess("Vehículo creado correctamente");
             }
             setError(null);
             onClose(true);
         } catch (error) {
-            console.log('Error al guardar el vehículo', error.response?.data);
-            const errorMessage = error.response?.data?.message || "Error al guardar el vehículo";
-            setError(errorMessage);
-            showError(errorMessage);
+            console.error('Error submit:', error);
+            const msg = error.response?.data?.detail || "Error al guardar el vehículo";
+            setError(msg);
+            showError(msg);
         } finally {
             setLoading(false);
         }
@@ -243,6 +245,28 @@ function VehiculoNuevoModal({ isOpen, onClose, vehiculoId, darkMode }) {
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="col-span-1 md:col-span-2">
+                            <label className="block text-sm font-medium mb-1 text-blue-500">Conductor Asignado</label>
+                            <select
+                                name="id_conductor"
+                                value={vehiculo.id_conductor}
+                                onChange={handleChange}
+                                className={`w-full p-2 rounded border border-blue-300 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white'}`}
+                            >
+                                <option value="0">-- Sin Conductor --</option>
+                                {conductores.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.nombre} {c.apellido} (DNI: {c.dni})
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Seleccione un conductor para vincularlo a este vehículo.
+                            </p>
+                        </div>
+                    </div>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-1" htmlFor="tipo">
