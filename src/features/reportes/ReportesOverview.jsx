@@ -40,7 +40,7 @@ export function ReportesOverview({ datos, loading }) {
                 <span className={`${trendColor} font-medium`}>{metric.change}</span>
               </div>
             </div>
-            <div className={`p-3 rounded-full ${darkMode ? 'bg-gray-700 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+            <div className={`p-3 rounded-full ${darkMode ? 'bg-yellow-50 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
               <Icon className="h-6 w-6" />
             </div>
           </div>

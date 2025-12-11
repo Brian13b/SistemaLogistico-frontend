@@ -17,9 +17,6 @@ export default function Reportes() {
           <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Reportes y Análisis
           </h1>
-          <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mt-1`}>
-            Balance financiero y operativo de la flota
-          </p>
         </div>
       </div>
 
