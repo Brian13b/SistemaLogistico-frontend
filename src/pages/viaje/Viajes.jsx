@@ -90,10 +90,20 @@ function Viajes() {
       return vehiculos.find(v => v.id === vehiculoId);
     };
 
-    const formatFecha = (fecha) => {
-      if (!fecha) return 'N/A';
-      const date = new Date(fecha);
-      return date.toLocaleDateString('es-AR');
+    const formatFecha = (fechaString) => {
+      if (!fechaString) return 'N/A';
+      try {
+        const soloFecha = fechaString.split('T')[0];
+        const [dia, mes, anio] = soloFecha.split('-');
+        return `${dia}/${mes}/${anio}`;
+      } catch (e) {
+        return 'N/A';
+      }
+    };
+
+    const formatCurrency = (amount) => {
+      if (amount === undefined || amount === null) return 'N/A';
+      return `$ ${Number(amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
     };
 
     return viajes.map(viaje => {
