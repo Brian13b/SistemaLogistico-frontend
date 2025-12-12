@@ -17,7 +17,8 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
         numero_contacto: '',
         email_contacto: '',
         direccion: '',
-        estado: 'Activo'
+        estado: 'Activo',
+        fecha_nacimeinto: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -36,6 +37,7 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
                 email_contacto: '',
                 direccion: '',
                 estado: 'Activo',
+                fecha_nacimeinto: ''
             });
             setImagePreview(null);
             setError(null);
@@ -51,7 +53,8 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
                     
                     setConductorData({
                         ...conductorData,
-                        codigo: conductorData.codigo || `C-${String(conductorId).padStart(3, '0')}`
+                        codigo: conductorData.codigo || `C-${String(conductorId).padStart(3, '0')}`,
+                        fecha_nacimiento: conductorData.fecha_nacimiento || ''
                     });
                     
                     setImagePreview(conductorData.foto || null);
@@ -94,6 +97,13 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const dataToSend = { ...conductor };
+
+        if (!dataToSend.fecha_nacimiento) dataToSend.fecha_nacimiento = null;
+        if (!dataToSend.numero_contacto) dataToSend.numero_contacto = null;
+        if (!dataToSend.email_contacto) dataToSend.email_contacto = null;
+        if (!dataToSend.foto) dataToSend.foto = null;
+
         try {
             setLoading(true);
             if (conductorId) {
@@ -105,7 +115,10 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
             }
             onClose();
         } catch (err) {
-            const errorMessage = err.response?.data?.message || "Error al guardar el conductor";
+            console.error("Error en submit:", err.response?.data);
+            const errorMessage = err.response?.data?.detail 
+                ? JSON.stringify(err.response.data.detail) 
+                : (err.response?.data?.message || "Error al guardar el conductor");
             setError(errorMessage);
             showError(errorMessage);
         } finally {
@@ -165,7 +178,6 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
                             >
                                 <option value="Activo">Activo</option>
                                 <option value="Inactivo">Inactivo</option>
-                                <option value="Suspendido">Suspendido</option>
                             </select>
                         </div>
                     </div>
@@ -206,21 +218,33 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1" htmlFor="dni">
-                            DNI
-                        </label>
-                        <input
-                            id="dni"
-                            name="dni"
-                            type="text"
-                            value={conductor.dni}
-                            onChange={handleChange}
-                            required
-                            className={`w-full p-2 rounded border ${
-                                darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                            }`}
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="fecha_nacimiento">Fecha Nacimiento</label>
+                            <input
+                                type="date"
+                                name="fecha_nacimiento"
+                                value={conductor.fecha_nacimiento}
+                                onChange={handleChange}
+                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1" htmlFor="dni">
+                                DNI
+                            </label>
+                            <input
+                                id="dni"
+                                name="dni"
+                                type="text"
+                                value={conductor.dni}
+                                onChange={handleChange}
+                                required
+                                className={`w-full p-2 rounded border ${
+                                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                }`}
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
