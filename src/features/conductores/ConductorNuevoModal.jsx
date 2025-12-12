@@ -99,6 +99,7 @@ function ConductorNuevoModal({ isOpen, onClose, conductorId, darkMode }) {
         e.preventDefault();
         const dataToSend = { ...conductor };
 
+        if (!dataToSend.codigo) dataToSend.codigo = null;
         if (!dataToSend.fecha_nacimiento) dataToSend.fecha_nacimiento = null;
         if (!dataToSend.numero_contacto) dataToSend.numero_contacto = null;
         if (!dataToSend.email_contacto) dataToSend.email_contacto = null;
