@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { use, useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading, setLastUpdated } from '../../store/appSlice.js';
 import { fetchVehiculos } from '../../store/vehiculosSlice.js';
@@ -96,6 +96,32 @@ export default function Dashboard({ userRole }) {
     
   }, [dispatch]);
 
+  const getEntidadInfo = (doc) => {
+    if (doc.tipo_entidad === 'VEHICULO') {
+      const vehiculo = vehiculos.find(v => v.id === doc.entidad_id);
+      return vehiculo ? `🚛 ${vehiculo.patente}` : 'Vehículo';
+    }
+    if (doc.tipo_entidad === 'CONDUCTOR') {
+      const conductor = conductores.find(c => c.id === doc.entidad_id);
+      return conductor ? `👤 ${conductor.nombre} ${conductor.apellido}` : 'Conductor';
+    }
+    if (doc.tipo_entidad === 'VIAJE') {
+      const viaje = viajes.find(v => v.id === doc.entidad_id);
+      const codigo = viaje?.codigo || `VJ-${String(doc.entidad_id).padStart(4,'0')}`;
+      return viaje ? `📦 ${codigo}` : 'Viaje';
+    }
+    return 'Documento';
+  };
+
+  const proximosVencimientos = useMemo(() => {
+    if (!vencimientos) return [];
+    
+    return [...vencimientos]
+      .filter(doc => doc.fecha_vencimiento) 
+      .sort((a, b) => new Date(a.fecha_vencimiento) - new Date(b.fecha_vencimiento))
+      .slice(0, 5);
+  }, [vencimientos]);
+
   const handleRetry = () => {
     confirmDialog.showDialog({
       title: 'Recargar datos',
@@ -121,9 +147,9 @@ export default function Dashboard({ userRole }) {
   };
 
   const formatDate = (date) => {
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    if (!date) return 'N/A';
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('es-AR', options);
+    return dateObj.toLocaleDateString('es-AR', { timeZone: 'UTC' });
   };
 
   const getActividadIcon = (actividad) => {
@@ -420,50 +446,62 @@ export default function Dashboard({ userRole }) {
             </h2>
             
             {vencimientosError ? (
-              <div className={`p-4 rounded-lg border-l-4 ${
-                darkMode ? 'bg-red-900 border-red-500' : 'bg-red-50 border-red-500'
-              }`}>
-                <p className={`text-sm ${darkMode ? 'text-red-300' : 'text-red-600'}`}>
-                  Error al cargar vencimientos: {vencimientosError}
-                </p>
-                <button
-                  onClick={() => dispatch(fetchVencimientos())}
-                  className={`mt-2 px-3 py-1 text-xs rounded ${
-                    darkMode 
-                      ? 'bg-red-700 hover:bg-red-600 text-red-100' 
-                      : 'bg-red-600 hover:bg-red-700 text-white'
-                  }`}
-                >
-                  Reintentar
-                </button>
+              <div className={`p-4 rounded-lg border-l-4 ${darkMode ? 'bg-red-900 border-red-500' : 'bg-red-50 border-red-500'}`}>
+                <p className={`text-sm ${darkMode ? 'text-red-300' : 'text-red-600'}`}>{vencimientosError}</p>
               </div>
             ) : (
               <>
                 <div className="space-y-3">
-                  {vencimientos.slice(0, 5).map((vencimiento, index) => (
-                    <div key={index} className={`p-3 rounded-lg border-l-4 ${vencimiento.critico ? darkMode ? 'bg-red-900 border-red-500' : 'bg-red-50 border-red-500' : darkMode ? 'bg-yellow-900 border-yellow-500' : 'bg-yellow-50 border-yellow-500'}`}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className={`font-medium text-sm ${vencimiento.critico ? darkMode ? 'text-red-200' : 'text-red-800': darkMode ? 'text-yellow-200' : 'text-yellow-800'}`}>
-                            {vencimiento.tipo}
-                          </p>
-                          <p className={`text-xs ${vencimiento.critico ? darkMode ? 'text-red-300' : 'text-red-600': darkMode ? 'text-yellow-300' : 'text-yellow-600'}`}>
-                            {vencimiento.descripcion}
-                          </p>
+                  {proximosVencimientos.length === 0 ? (
+                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No hay vencimientos próximos.</p>
+                  ) : (
+                    proximosVencimientos.map((vencimiento, index) => {
+                      const daysLeft = Math.ceil((new Date(vencimiento.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24));
+                      const isExpired = daysLeft < 0;
+                      const isUrgent = daysLeft < 15;
+                      
+                      const borderColor = isExpired ? 'border-red-500' : isUrgent ? 'border-yellow-500' : 'border-green-500';
+                      const bgColor = isExpired 
+                        ? (darkMode ? 'bg-red-900/20' : 'bg-red-50') 
+                        : isUrgent 
+                          ? (darkMode ? 'bg-yellow-900/20' : 'bg-yellow-50')
+                          : (darkMode ? 'bg-green-900/20' : 'bg-green-50');
+
+                      return (
+                        <div key={index} className={`p-3 rounded-lg border-l-4 ${borderColor} ${bgColor}`}>
+                          <div className="flex justify-between items-center">
+                            
+                            {/* Barra izquierda */}
+                            <div>
+                              <p className={`text-xs font-bold uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {vencimiento.tipo_documento || vencimiento.tipo}
+                              </p>
+                              <p className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {getEntidadInfo(vencimiento)}
+                              </p>
+                            </div>
+
+                            {/* Barra derecha */}
+                            <div className="text-right">
+                              <p className={`text-sm font-bold ${isExpired ? 'text-red-500' : isUrgent ? 'text-yellow-500' : 'text-green-600'}`}>
+                                {formatDate(vencimiento.fecha_vencimiento || vencimiento.fecha)}
+                              </p>
+                              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {isExpired ? 'Vencido' : `${daysLeft} días`}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        <span className={`text-xs font-medium ${vencimiento.critico ? darkMode ? 'text-red-200' : 'text-red-800' : darkMode ? 'text-yellow-200' : 'text-yellow-800'}`}>
-                          {formatDate(vencimiento.fecha)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })
+                  )}
                 </div>
                 
-                {vencimientos.length > 5 && (
-                  <button className={`mt-4 w-full text-sm py-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>
-                    Ver todos ({vencimientos.length})
-                  </button>
-                )}
+                <button 
+                  className={`mt-4 w-full text-sm py-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+                >
+                  Ver calendario completo
+                </button>
               </>
             )}
           </div>
