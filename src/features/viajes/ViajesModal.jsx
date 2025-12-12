@@ -160,6 +160,19 @@ function ViajeModal({ isOpen, onClose, viajeId, darkMode }) {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Destino</p>
                 <p>{viaje.destino || 'No especificado'}</p>
               </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Peso Carga</p>
+                <p className="font-medium">
+                  {`${viaje.peso} ${viaje.unidad_medida || 'Tn'}` || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Precio / Costo</p>
+                <p className="font-bold text-green-600 dark:text-green-400">
+                  {`$ ${Number(viaje.precio).toLocaleString('es-AR', { minimumFractionDigits: 2 })}` 
+                    || 'N/A'}
+                </p>
+              </div>
               <div className="md:col-span-2">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Observaciones</p>
                 <p className="whitespace-pre-line">{viaje.observaciones || 'Ninguna'}</p>
