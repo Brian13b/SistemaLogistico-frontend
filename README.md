@@ -1,54 +1,41 @@
-# 🚀 Frontend para el sistema de gestión de flotas.
+# 💻 Frontend - Sistema de Gestión de Flotas
 
-Este repositorio contiene la interfaz de usuario del sistema de gestión de flotas, desarrollada en **React**. Proporciona una experiencia interactiva para la administración de vehículos, conductores, viajes, reportes y más, conectándose al backend mediante API REST.
-
----
-
-🌟 **¿Qué hace esta aplicación?**  
-- Brinda una interfaz web dinámica para gestionar el sistema logístico.  
-- Permite realizar operaciones CRUD sobre vehículos, conductores y viajes.  
-- Integra funcionalidades como autenticación, mapas en tiempo real, reportes.  
-- Conecta con el backend para sincronizar datos en tiempo real.
+Interfaz de usuario moderna y reactiva para el **Sistema Logístico**. Construida con React, ofrece una experiencia de usuario fluida para administradores y operadores logísticos.
 
 ---
 
-🔧 **Características principales**  
-- 🖥️ Panel de control (Dashboard) con resumen del sistema.  
-- 🔐 Acceso y autenticación de usuarios con JWT.  
-- 👥 Gestión completa de empleados, incluyendo sus documentos y roles.  
-- 🚘 CRUD de vehículos, con visualización en mapas mediante **Leaflet**.  
-- 🗺️ Visualización de vehículos activos y sus estados en tiempo real.  
-- 📋 Reportes detallados con filtros por fechas.  
-- ⚙️ Control administrativo para registrar nuevos empleados y asignar roles.
+## 🌟 Funcionalidades Principales
+- **Dashboard Interactivo:** Vista general de métricas clave y estados de flota.
+- **Mapas en Vivo:** Integración con **Leaflet** para visualizar la ubicación de los vehículos.
+- **Gestión Modular:** Paneles separados para Vehículos, Conductores, Viajes y Facturación.
+- **Seguridad:** Manejo de sesiones con JWT y rutas protegidas (Private Routes).
+- **Reportes Visuales:** Tablas dinámicas.
 
 ---
 
-📚 **Secciones de la aplicación**  
-- **Login**: Inicio de sesión seguro para acceder al sistema.  
-- **Dashboard**: Vista general del sistema con métricas clave.  
-- **Gestión**:
-  - Vehículos: CRUD + estado + visualización en mapa.
-  - Conductores: CRUD + documentos + asignaciones.
-  - Viajes: Alta, seguimiento y cierre de viajes.
-- **Mapa**: Vista de los vehículos activos y su ubicación.  
-- **Reportes**: Generación de informes por rango de fechas y filtros avanzados.
-- **Administración**: Registro de nuevos empleados y gestión de roles.
+## 🔧 Stack Tecnológico
+- **Core:** React.js (Vite)
+- **Estado Global:** Redux Toolkit
+- **Estilos:** TailwindCSS
+- **Mapas:** React-Leaflet
+- **HTTP:** Axios (con interceptors para manejo de tokens)
 
 ---
 
-🛡️ **Tecnologías Usadas**  
-- 🖥️ Framework: React  
-- ⚙️ Gestión de estado: Redux 
-- 🔌 Comunicación API: Axios  
-- 🗺️ Mapas: Leaflet  
-- 🎨 Estilos: CSS Modules / Tailwind
+## 📚 Estructura del Proyecto
+- `/src/components`: Componentes reutilizables (Botones, Modales, Tablas).
+- `/src/pages`: Vistas principales (Login, Dashboard, ABMs).
+- `/src/store`: Slices de Redux para manejo de estado.
+- `/src/services`: Conectores a la API (Gateway).
 
 ---
 
-🌱 **Futuras actualizaciones**  
-- 📱 Soporte completo para dispositivos móviles.  
-- 📈 Mejoras en los reportes y visualización de estadísticas.  
-- 🔔 Notificaciones en tiempo real y alertas del sistema.
-- 💳 Sección de facturación conectada con **ARCA Argentina**.  
+## 🌱 Futuras Actualizaciones
+- [ ] **PWA (Progressive Web App):** Habilitar instalación en escritorio y móviles.
+- [ ] **WebSockets:** Integración para recibir actualizaciones de ubicación sin recargar.
+- [ ] **Internacionalización (i18n):** Soporte multi-idioma.
 
 ---
+
+## 👤 Autor
+**Brian Battauz** - [GitHub](https://github.com/Brian13b)

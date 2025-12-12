@@ -43,7 +43,7 @@ function LoginPage() {
             </div>
             <div className="mt-32">
               <h1 className="text-5xl font-bold leading-tight">
-                Simplificando la logística,<br />conectando personas
+                Simplificando la logística
               </h1>
             </div>
           </div>

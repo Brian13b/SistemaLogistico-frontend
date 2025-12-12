@@ -160,6 +160,19 @@ function ViajeModal({ isOpen, onClose, viajeId, darkMode }) {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Destino</p>
                 <p>{viaje.destino || 'No especificado'}</p>
               </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Peso Carga</p>
+                <p className="font-medium">
+                  {`${viaje.peso} ${viaje.unidad_medida || 'Tn'}` || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Precio / Costo</p>
+                <p className="font-bold text-green-600 dark:text-green-400">
+                  {`$ ${Number(viaje.precio).toLocaleString('es-AR', { minimumFractionDigits: 2 })}` 
+                    || 'N/A'}
+                </p>
+              </div>
               <div className="md:col-span-2">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Observaciones</p>
                 <p className="whitespace-pre-line">{viaje.observaciones || 'Ninguna'}</p>
@@ -171,7 +184,7 @@ function ViajeModal({ isOpen, onClose, viajeId, darkMode }) {
           {conductor && (
             <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
               <div className="flex items-center gap-3 mb-3">
-                <FaUser className="text-blue-500" />
+                <FaUser className={`${darkMode ? 'text-yellow-500' : 'text-blue-500'}`}/>
                 <h3 className="text-lg font-semibold">Conductor Asignado</h3>
               </div>
               <div className="flex flex-col md:flex-row gap-4">
@@ -208,7 +221,7 @@ function ViajeModal({ isOpen, onClose, viajeId, darkMode }) {
           {vehiculo && (
             <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
               <div className="flex items-center gap-3 mb-3">
-                <FaCar className="text-blue-500" />
+                <FaCar className={`${darkMode ? 'text-yellow-500' : 'text-blue-500'}`}/>
                 <h3 className="text-lg font-semibold">Vehículo Asignado</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -235,7 +248,7 @@ function ViajeModal({ isOpen, onClose, viajeId, darkMode }) {
           {/* Documentos */}
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
             <div className="flex items-center gap-3 mb-3">
-              <FaFileAlt className="text-blue-500" />
+              <FaFileAlt className={`${darkMode ? 'text-yellow-500' : 'text-blue-500'}`}/>
               <h3 className="text-lg font-semibold">Documento de Viaje</h3>
             </div>
             {documentos && documentos.length > 0 ? (
