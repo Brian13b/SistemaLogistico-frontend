@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Tooltip, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FaTimes, FaBatteryThreeQuarters, FaThermometerHalf, FaTachometerAlt, FaMapMarkerAlt, FaCompass, FaWeightHanging } from 'react-icons/fa'; // Iconos para darle vida
+import { FaTimes } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
 import FlyToVehiculo from '../components/FlyToVehiculo';
@@ -33,6 +33,13 @@ function Seguimiento() {
     });
   };
 
+  const vehiculosConTracker = flota.filter(v => 
+    v.ubicacion && 
+    v.ubicacion.latitud !== null && 
+    v.ubicacion.latitud !== 0 && 
+    v.ubicacion.longitud !== null
+  );
+
   const seleccionarVehiculo = (id) => {
     setVehiculoSeleccionadoId(id);
     const v = flota.find(item => item.id === id);
@@ -43,7 +50,7 @@ function Seguimiento() {
     setVehiculoSeleccionadoId(null);
   };
 
-  const vehiculoActivo = flota.find(v => v.id === vehiculoSeleccionadoId);
+  const vehiculoActivo = vehiculosConTracker.find(v => v.id === vehiculoSeleccionadoId);
 
   if (loading) {
     return (
@@ -76,7 +83,7 @@ function Seguimiento() {
               <FlyToVehiculo vehiculo={vehiculoActivo.ubicacion} />
             )}
 
-            {flota.map((vehiculo) => (
+            {vehiculosConTracker.map((vehiculo) => (
               vehiculo.ubicacion && vehiculo.ubicacion.latitud && (
                 <Marker
                   key={vehiculo.id}
@@ -152,10 +159,10 @@ function Seguimiento() {
             ${darkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-gray-100 text-gray-800 border-gray-300'}
         `}>
           <div className={`p-4 border-b sticky top-0 z-10 ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-400 bg-gray-100'}`}>
-            <h2 className="text-lg font-bold">Flota ({flota.length})</h2>
+            <h2 className="text-lg font-bold">Flota ({vehiculosConTracker.length})</h2>
           </div>
           <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-            {flota.map((vehiculo) => (
+            {vehiculosConTracker.map((vehiculo) => (
               <div
                 key={vehiculo.id}
                 className={`p-4 cursor-pointer transition-colors ${
@@ -174,6 +181,11 @@ function Seguimiento() {
                 <p className="text-sm opacity-80">{vehiculo.marca} {vehiculo.modelo}</p>
               </div>
             ))}
+            {vehiculosConTracker.length === 0 && (
+                <div className="p-4 text-center opacity-60">
+                    No hay vehículos transmitiendo señal GPS.
+                </div>
+            )}
           </div>
         </div>
       </div>
