@@ -117,8 +117,12 @@ export default function Dashboard({ userRole }) {
     if (!vencimientos) return [];
     
     return [...vencimientos]
-      .filter(doc => doc.fecha_vencimiento) 
-      .sort((a, b) => new Date(a.fecha_vencimiento) - new Date(b.fecha_vencimiento))
+      .filter(doc => doc.fecha || doc.fecha_vencimiento)
+      .sort((a, b) => {
+        const dateA = new Date(a.fecha || a.fecha_vencimiento);
+        const dateB = new Date(b.fecha || b.fecha_vencimiento);
+        return dateA - dateB;
+      })
       .slice(0, 5);
   }, [vencimientos]);
 
@@ -456,7 +460,9 @@ export default function Dashboard({ userRole }) {
                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No hay vencimientos próximos.</p>
                   ) : (
                     proximosVencimientos.map((vencimiento, index) => {
-                      const daysLeft = Math.ceil((new Date(vencimiento.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24));
+                      const fechaReal = vencimiento.fecha || vencimiento.fecha_vencimiento;
+
+                      const daysLeft = Math.ceil((new Date(fechaReal) - new Date()) / (1000 * 60 * 60 * 24));
                       const isExpired = daysLeft < 0;
                       const isUrgent = daysLeft < 15;
                       
@@ -471,20 +477,21 @@ export default function Dashboard({ userRole }) {
                         <div key={index} className={`p-3 rounded-lg border-l-4 ${borderColor} ${bgColor}`}>
                           <div className="flex justify-between items-center">
                             
-                            {/* Barra izquierda */}
+                            {/* Lado Izquierdo */}
                             <div>
                               <p className={`text-xs font-bold uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                 {vencimiento.tipo_documento || vencimiento.tipo}
                               </p>
+                              
                               <p className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {getEntidadInfo(vencimiento)}
+                                {vencimiento.entidad_id ? getEntidadInfo(vencimiento) : (vencimiento.descripcion || 'Vencimiento')}
                               </p>
                             </div>
 
-                            {/* Barra derecha */}
+                            {/* Lado Derecho */}
                             <div className="text-right">
                               <p className={`text-sm font-bold ${isExpired ? 'text-red-500' : isUrgent ? 'text-yellow-500' : 'text-green-600'}`}>
-                                {formatDate(vencimiento.fecha_vencimiento || vencimiento.fecha)}
+                                {formatDate(fechaReal)}
                               </p>
                               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                 {isExpired ? 'Vencido' : `${daysLeft} días`}
