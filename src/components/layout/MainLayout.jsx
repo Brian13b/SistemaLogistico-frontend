@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { FaBars } from 'react-icons/fa';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -6,6 +6,7 @@ import ThemeToggle from '../common/ThemeToggle';
 import Sidebar from './Sidebar';
 import { useTheme } from '../../context/ThemeContext';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import Loading from '../common/Loading';
 
 function MainLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -72,7 +73,9 @@ function MainLayout() {
           ></div>
         )}
         <main className={`flex-1 overflow-auto ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'} p-6 ${isSidebarCollapsed && !isMobile ? 'ml-3' : 'ml-3'}`}>
-          <Outlet />
+          <Suspense fallback={<Loading />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
