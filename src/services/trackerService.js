@@ -4,6 +4,10 @@ export const trackerService = {
     obtenerUbicacionActual: (dispositivoId) => 
         api.get(`/tracker/tracker/dispositivo/${dispositivoId}/actual`),
 
+    obtenerDispositivos: () => api.get('/dispositivos/'), 
+
+    obtenerFlotaTiempoReal: () => api.get('/tracker/tracker/tiempo-real'),
+
     obtenerHistorialUbicaciones: (dispositivoId, fechaInicio, fechaFin) => 
         api.get(`/tracker/tracker/dispositivo/${dispositivoId}/historial`, {
             params: {

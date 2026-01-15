@@ -7,46 +7,41 @@ export const useMapaFlota = () => {
   const [flota, setFlota] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  const flotaBaseRef = useRef([]);
+  const estructuraFlotaRef = useRef([]);
 
   const inicializarFlota = async () => {
     try {
       setLoading(true);
-      const [vehiculosRes, conductoresRes] = await Promise.all([
-        vehiculosService.getAll(),
-        conductoresService.getAll()
+      
+      const [vehiculosRes, conductoresRes, dispositivosRes] = await Promise.all([
+        vehiculosService.getAll(),      
+        conductoresService.getAll(),   
+        trackerService.obtenerDispositivos() 
       ]);
 
       const vehiculos = vehiculosRes.data || [];
       const conductores = conductoresRes.data || [];
+      const dispositivos = dispositivosRes.data || [];
 
-      const baseProcesada = await Promise.all(
-        vehiculos.map(async (v) => {
-          const conductor = conductores.find(c => c.id === v.id_conductor);
-          const nombreConductor = conductor 
-            ? `${conductor.nombre} ${conductor.apellido}` 
-            : 'Sin Conductor';
+      const baseProcesada = vehiculos.map((v) => {
+        const conductor = conductores.find(c => c.id === v.id_conductor);
+        
+        const dispositivo = dispositivos.find(d => d.vehiculo_id === v.id && d.activo);
 
-          let vehiculoTrack = null;
-          try {
-            const trackInfo = await trackerService.obtenerVehiculoPorId(v.id);
-            if (trackInfo.data) vehiculoTrack = trackInfo.data;
-          } catch (e) {
-            console.warn(`No se pudo cargar info tracker para ${v.patente}`);
-          }
+        return {
+          ...v, 
+          conductorNombre: conductor ? `${conductor.nombre} ${conductor.apellido}` : 'Sin Conductor',
+          
+          dispositivo: dispositivo || null, 
+          imei: dispositivo ? dispositivo.imei : null,
+          
+          ubicacion: null,
+          estadoTracking: dispositivo ? 'SIN_SEÑAL' : 'NO_INSTALADO',
+          enMovimiento: false
+        };
+      });
 
-          return {
-            ...v,
-            conductorNombre: nombreConductor,
-            vehiculoTrack: vehiculoTrack, 
-            ubicacion: null,
-            estadoTracking: 'SIN_SEÑAL',
-            enMovimiento: false
-          };
-        })
-      );
-
-      flotaBaseRef.current = baseProcesada;
+      estructuraFlotaRef.current = baseProcesada;
       setFlota(baseProcesada);
       
       actualizarUbicaciones();
@@ -59,40 +54,51 @@ export const useMapaFlota = () => {
   };
 
   const actualizarUbicaciones = useCallback(async () => {
-    if (flotaBaseRef.current.length === 0) return;
+    if (estructuraFlotaRef.current.length === 0) return;
 
-    const nuevaFlota = await Promise.all(
-      flotaBaseRef.current.map(async (vehiculoBase) => {
-        let ubicacion = null;
-        let estadoTracking = 'SIN_SEÑAL';
+    try {
+      const res = await trackerService.obtenerFlotaTiempoReal();
+      const ubicacionesLive = res.data || []; 
+      
+      const nuevaFlota = estructuraFlotaRef.current.map((vehiculo) => {
+        if (!vehiculo.imei) return vehiculo;
 
-        try {
-          const trackRes = await trackerService.obtenerUbicacionActual(vehiculoBase.id);
-          
-          if (trackRes.data && trackRes.data.latitud) {
-            ubicacion = trackRes.data;
-            estadoTracking = 'ONLINE';
-          }
-        } catch (err) {
-          estadoTracking = 'OFFLINE';
+        const match = ubicacionesLive.find(u => u.dispositivo_imei === vehiculo.imei);
+
+        if (match && match.ubicacion) {
+          const ultimoReporte = new Date(match.ubicacion.timestamp);
+          const ahora = new Date();
+          const diferenciaMinutos = (ahora - ultimoReporte) / 1000 / 60;
+
+          const estado = diferenciaMinutos > 10 ? 'OFFLINE' : 'ONLINE';
+
+          return {
+            ...vehiculo,
+            ubicacion: match.ubicacion,
+            estadoTracking: estado, 
+            enMovimiento: match.ubicacion.velocidad > 2 && estado === 'ONLINE',
+            ultimo_movimiento: match.ubicacion.timestamp
+          };
         }
-
+        
         return {
-          ...vehiculoBase,
-          ubicacion: ubicacion,
-          estadoTracking: estadoTracking,
-          enMovimiento: ubicacion ? (ubicacion.velocidad > 5) : false
+          ...vehiculo,
+          estadoTracking: 'OFFLINE' 
         };
-      })
-    );
+      });
 
-    setFlota(nuevaFlota);
+      setFlota(nuevaFlota);
+
+    } catch (err) {
+      console.error("Error polling ubicaciones:", err);
+    }
   }, []);
 
   useEffect(() => {
     inicializarFlota();
     
-    const interval = setInterval(actualizarUbicaciones, 10000);
+    const interval = setInterval(actualizarUbicaciones, 10000); 
+    
     return () => clearInterval(interval);
   }, [actualizarUbicaciones]);
 
