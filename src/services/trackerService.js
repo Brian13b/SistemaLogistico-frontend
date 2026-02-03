@@ -2,25 +2,25 @@ import api from './api';
 
 export const trackerService = {
     obtenerUbicacionActual: (dispositivoId) => 
-        api.get(`/v1/tracker/tracker/dispositivo/${dispositivoId}/actual`),
+        api.get(`/tracker/tracker/dispositivo/${dispositivoId}/actual`),
 
-    obtenerDispositivos: () => api.get('/v1/dispositivos/'), 
+    obtenerDispositivos: () => api.get('/dispositivos/'), 
 
-    obtenerFlotaTiempoReal: () => api.get('/v1/tracker/tracker/tiempo-real'),
+    obtenerFlotaTiempoReal: () => api.get('/tracker/tracker/tiempo-real'),
 
     obtenerHistorialUbicaciones: (dispositivoId, fechaInicio, fechaFin) => 
-        api.get(`/v1/tracker/tracker/dispositivo/${dispositivoId}/historial`, {
+        api.get(`/tracker/tracker/dispositivo/${dispositivoId}/historial`, {
             params: {
                 fechaInicio,
                 fechaFin
             }
         }),
 
-    obtenerVehiculos: () => api.get('/v1/vehiculos'),
+    obtenerVehiculos: () => api.get('/vehiculos'),
     
-    obtenerVehiculoPorId: (vehiculoId) => api.get(`/v1/vehiculos/${vehiculoId}`),
+    obtenerVehiculoPorId: (vehiculoId) => api.get(`/vehiculos/${vehiculoId}`),
 
-    obtenerDispositivos: () => api.get('/v1/dispositivos'),
+    obtenerDispositivos: () => api.get('/dispositivos'),
     
-    obtenerDispositivoPorId: (dispositivoId) => api.get(`/v1/dispositivos/${dispositivoId}`),
+    obtenerDispositivoPorId: (dispositivoId) => api.get(`/dispositivos/${dispositivoId}`),
 };
